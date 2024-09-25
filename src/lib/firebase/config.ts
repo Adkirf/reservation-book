@@ -1,8 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence, initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,9 +16,20 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Reinitialize Firestore with specific settings
-const firestoreDb = initializeFirestore(app, {
+// Initialize Firestore with specific settings
+const db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
 });
 
-export { auth, firestoreDb as db };
+// Enable offline persistence
+if (typeof window !== 'undefined') {
+    enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code == 'failed-precondition') {
+            console.log("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
+        } else if (err.code == 'unimplemented') {
+            console.log("The current browser does not support all of the features required to enable persistence");
+        }
+    });
+}
+
+export { auth, db };

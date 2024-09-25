@@ -57,6 +57,17 @@ Please review the @admingflow.md SOP file and compare it to the folder structure
 @Codebase @overview.md 
 Review the folde structure in the overview.md file to follow exactly the instructions in @setup.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, and give suggestions when a new file would improve the overall structure. 
 
+10. Implement userflow.md
+@Codebase @overview.md 
+Review the folde structure in the overview.md file to follow exactly the instructions in @userflow.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, do NOT create new files, only suggest when a new file would improve the overall structure. 
+
+11. Implement employeeflow.md
+@Codebase @overview.md 
+Review the folde structure in the overview.md file to follow exactly the instructions in @employeeflow.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, do NOT create new files, only suggest when a new file would improve the overall structure.
+
+12. Implement adminflow.md
+@Codebase @overview.md 
+
 6. Implement frontend.md
 @Codebase @overview.md 
 Please review the overview and @frontend.md SOP files and work through the steps in Main Layout Component and Home Page one by one to create and update all the necessary files and functions.

@@ -1,6 +1,6 @@
-# Overview SOP
+This Next.js application is a reservation management system for small-to-medium gastronomy businesses, featuring user authentication and role-based access control. The app utilizes Firebase for backend services, including authentication and Firestore database, with a frontend built using TypeScript and styled with Tailwind CSS. It offers a dashboard with various reservation views (monthly, weekly, daily) for employees, and additional user management capabilities for admins. The project structure follows Next.js conventions, incorporates custom fonts, and is set up for easy deployment, likely on Vercel.
 
-This document outlines the steps required to create the MVP of the reservation management app for small-to-medium gastronomy businesses.
+**Folder Structure**
 
 reservation-book/
 ├── public/
@@ -9,9 +9,6 @@ reservation-book/
 │       └── GeistMonoVF.woff
 ├── src/
 │   ├── app/
-│   │   ├── api/
-│   │   │   └── auth/
-│   │   │       └── [...nextauth].ts
 │   │   ├── dashboard/
 │   │   │   └── page.tsx
 │   │   ├── login/
@@ -26,13 +23,20 @@ reservation-book/
 │   │   │   ├── MonthlyView.tsx
 │   │   │   ├── WeeklyView.tsx
 │   │   │   └── DailyView.tsx
-│   ├── lib/
-│   │   ├── firebase.ts
-│   │   └── projectTypes.ts
+│   │   └── AuthProvider.tsx
+│   └── lib/
+│       ├── firebase/
+│       │   ├── config.ts
+│       │   └── auth.ts
+│       └── projectTypes.ts
+├── .env
 ├── .gitignore
+├── firestore.rules
 ├── next.config.mjs
 ├── package.json
+├── package-lock.json
 ├── postcss.config.mjs
+├── README.md
 ├── tailwind.config.ts
 ├── tsconfig.json
 └── documentation/
@@ -42,47 +46,3 @@ reservation-book/
     ├── employeeflow.md
     └── adminflow.md
 
-## Steps to Create MVP
-
-- [x] **Setup**
-  - [x] Initialize Next.js project with App Router
-  - [x] Setup TypeScript
-  - [x] Configure Tailwind CSS
-  - [] Setup Firebase Authentication
-
-- [ ] **User Flow**
-  - [x] Implement Firebase Authentication
-  - [x] Create AuthProvider component
-  - [ ] Create login page (app/login/page.tsx)
-  - [ ] Handle user roles (admin, employee)
-
-- [ ] **Employee Flow**
-  - [ ] Create dashboard page with view selection (monthly, weekly, daily)
-  - [ ] Implement MonthlyView component
-  - [ ] Implement WeeklyView component
-  - [ ] Implement DailyView component
-  - [ ] Add state management for switching between views
-
--   [ ] **Admin Flow**
-  - [ ] Create user management page (app/admin/page.tsx)
-  - [ ] Implement "delete user" functionality
-  - [ ] Implement "create user" functionality
-
-- [ ] **UI Enhancements**
-  - [ ] Apply consistent styling using Tailwind CSS
-  - [ ] Ensure responsive design for all components
-  - [ ] Implement dark mode toggle (if desired)
-
-- [ ] **Error Handling and User Feedback**
-  - [ ] Implement toast notifications for success/error messages
-  - [ ] Add inline form validation feedback
-  - [ ] Create error boundary components for graceful error handling
-
-- [ ] **API Development**
-  - [ ] Implement authentication API routes
-  - [ ] Create reservation management API routes
-  - [ ] Develop user management API routes
-
-## Notes
-- Focus on getting a working version of the app.
-- Deployment and testing are not covered in this SOP.
