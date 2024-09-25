@@ -6,21 +6,21 @@ This document outlines the steps required to implement the admin flow for the re
 
 - [ ] **Create User Management Page**
   - [ ] Design user management page layout
-  - [ ] Implement user list component to display current users
+  - [ ] Implement @UserList.tsx component to display current users
   - [ ] Add functionality to fetch and display users from Firebase
 
 - [ ] **Implement "Delete User" Functionality**
   - [ ] Add delete button to each user in the user list
   - [ ] Implement delete confirmation dialog
   - [ ] Handle delete action
-  - [ ] Remove user data from Firebase
+  - [ ] Remove user data from Firebase and update local state
 
 - [ ] **Implement "Create User" Functionality**
   - [ ] Add button to create a new user
   - [ ] Design "Add User" form
   - [ ] Implement form validation
   - [ ] Handle form submission
-  - [ ] Save new user data to Firebase
+  - [ ] Save new user data to Firebase and update local state
 
 ## Notes
 - Follow the steps in the order listed to ensure a smooth implementation process.

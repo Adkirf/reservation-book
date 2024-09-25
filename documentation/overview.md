@@ -9,26 +9,38 @@ reservation-book/
 │       └── GeistMonoVF.woff
 ├── src/
 │   ├── app/
+│   │   ├── admin/
+│   │   │   └── page.tsx
 │   │   ├── dashboard/
 │   │   │   └── page.tsx
 │   │   ├── login/
-│   │   │   └── page.tsx
-│   │   ├── admin/
 │   │   │   └── page.tsx
 │   │   ├── globals.css
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── components/
 │   │   ├── Dashboard/
+│   │   │   ├── DailyView.tsx
 │   │   │   ├── MonthlyView.tsx
-│   │   │   ├── WeeklyView.tsx
-│   │   │   └── DailyView.tsx
-│   │   └── AuthProvider.tsx
+│   │   │   └── WeeklyView.tsx
+│   │   ├── Reservation/
+│   │   │   ├── AddReservationForm.tsx
+│   │   │   ├── EditReservationForm.tsx
+│   │   │   └── ReservationModal.tsx
+│   │   ├── UserManagement/
+│   │   │   ├── AddUserForm.tsx
+│   │   │   └── UserList.tsx
+│   │   ├── AuthProvider.tsx
+│   │   └── ProtectedRoute.tsx
+│   ├── contexts/
+│   │   ├── AuthContext.tsx
+│   │   └── ReservationContext.tsx
 │   └── lib/
 │       ├── firebase/
+│       │   ├── auth.ts
 │       │   ├── config.ts
-│       │   └── auth.ts
-│       └── projectTypes.ts
+│       │   └── firestore.ts
+│       └── types.ts
 ├── .env
 ├── .gitignore
 ├── firestore.rules
@@ -40,9 +52,9 @@ reservation-book/
 ├── tailwind.config.ts
 ├── tsconfig.json
 └── documentation/
+    ├── adminflow.md
+    ├── employeeflow.md
     ├── overview.md
     ├── setup.md
-    ├── userflow.md
-    ├── employeeflow.md
-    └── adminflow.md
+    └── userflow.md
 
