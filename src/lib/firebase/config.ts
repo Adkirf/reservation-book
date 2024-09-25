@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence, initializeFirestore } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -16,20 +16,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Initialize Firestore with specific settings
+// Initialize Firestore with persistent cache and long polling
 const db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
+    localCache: persistentLocalCache({
+        tabManager: persistentSingleTabManager({})
+    })
 });
-
-// Enable offline persistence
-if (typeof window !== 'undefined') {
-    enableIndexedDbPersistence(db).catch((err) => {
-        if (err.code == 'failed-precondition') {
-            console.log("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
-        } else if (err.code == 'unimplemented') {
-            console.log("The current browser does not support all of the features required to enable persistence");
-        }
-    });
-}
 
 export { auth, db };

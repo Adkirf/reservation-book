@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+'use client'
+
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthProvider";
-import { Button } from "@/components/ui/button";
-import { Menu, Plus } from "lucide-react";
 import { MenuSheetComponent } from "@/components/MenuSheet";
 import { MenuSidebar } from "@/components/MenuSheet";
+import { AddReservationButton } from "@/components/AddReservationButton";
 
 const geistSans = localFont({
   src: "../../public/fonts/GeistVF.woff",
@@ -17,11 +17,6 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
-
-export const metadata: Metadata = {
-  title: "Reservation Book",
-  description: "Reservation management app for small-to-medium gastronomy businesses",
-};
 
 export default function RootLayout({
   children,
@@ -48,13 +43,7 @@ export default function RootLayout({
                 {children}
               </main>
 
-              <Button
-                size="icon"
-                className="fixed bottom-4 right-4 rounded-full shadow-lg"
-                aria-label="Add item"
-              >
-                <Plus className="h-6 w-6" />
-              </Button>
+              <AddReservationButton />
             </div>
           </div>
         </AuthProvider>

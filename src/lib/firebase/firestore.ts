@@ -1,7 +1,8 @@
-import { collection, addDoc, updateDoc, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, setDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { Reservation } from '../projectTypes';
 import { db } from './config';
 
-// ... existing code ...
+// Use db for all Firestore operations
 
 export const addUser = async (email: string, role: string) => {
     try {
@@ -14,11 +15,9 @@ export const addUser = async (email: string, role: string) => {
     }
 };
 
-// ... existing code ...
-
-export const addReservation = async (reservationData: any) => {
+export const addReservation = async (reservation: Omit<Reservation, 'id'>): Promise<string> => {
     try {
-        const docRef = await addDoc(collection(db, 'reservations'), reservationData);
+        const docRef = await addDoc(collection(db, 'reservations'), reservation);
         return docRef.id;
     } catch (error) {
         console.error('Error adding reservation:', error);
@@ -46,4 +45,33 @@ export const deleteReservation = async (id: string) => {
     }
 };
 
-// ... existing code ...
+export const getReservationsByMonth = async (year: number, month: number): Promise<Reservation[]> => {
+    try {
+        const startDate = new Date(year, month, 1);
+        const endDate = new Date(year, month + 1, 0);
+
+        const q = query(
+            collection(db, 'reservations'),
+            where('date', '>=', Timestamp.fromDate(startDate)),
+            where('date', '<=', Timestamp.fromDate(endDate))
+        );
+
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                date: (data.date as Timestamp).toDate(),
+                name: data.name,
+                contact: data.contact,
+                numberOfPeople: data.numberOfPeople,
+                comment: data.comment
+            } as Reservation;
+        });
+    } catch (error) {
+        console.error('Error fetching reservations:', error);
+        throw error;
+    }
+};
+
+// ... other existing functions ...

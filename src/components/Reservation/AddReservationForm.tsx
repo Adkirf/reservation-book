@@ -18,12 +18,6 @@ export default function AddReservationForm({ initialDate, onClose }: AddReservat
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await addReservation({
-                date,
-                time,
-                name,
-                guests,
-            });
             resetReservation();
             onClose();
         } catch (error) {
