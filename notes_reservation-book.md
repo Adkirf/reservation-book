@@ -53,6 +53,10 @@ Please review the overview SOP and create a adminflow.md SOP file which will bre
 @Codebase @overview.md 
 Please review the @admingflow.md SOP file and compare it to the folder structure and current progress in the overview.md file. Add any missing file or folder required for this step - if not existing already. Do include code for now - focus only on updating the required folder structure for the **Adming Flow**
 
+9. Implement setup.md
+@Codebase @overview.md 
+Review the folde structure in the overview.md file to follow exactly the instructions in @setup.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, and give suggestions when a new file would improve the overall structure. 
+
 6. Implement frontend.md
 @Codebase @overview.md 
 Please review the overview and @frontend.md SOP files and work through the steps in Main Layout Component and Home Page one by one to create and update all the necessary files and functions.

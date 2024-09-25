@@ -48,7 +48,7 @@ reservation-book/
   - [x] Initialize Next.js project with App Router
   - [x] Setup TypeScript
   - [x] Configure Tailwind CSS
-  - [x] Setup Firebase Authentication
+  - [] Setup Firebase Authentication
 
 - [ ] **User Flow**
   - [x] Implement Firebase Authentication

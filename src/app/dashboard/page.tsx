@@ -1,3 +1,11 @@
+'use client';
+
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+
 export default function Dashboard() {
-    return <div>Dashbord page</div>;
+    return (
+        <ProtectedRoute allowedRoles={['employee', 'admin']}>
+            <div>Dashboard page</div>
+        </ProtectedRoute>
+    );
 }

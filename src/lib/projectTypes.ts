@@ -1,9 +1,5 @@
 import { User } from 'firebase/auth';
 
-export interface UserWithRole extends User {
-    role?: 'admin' | 'employee';
-}
-
 export type UserRole = 'admin' | 'employee' | null;
 
 export interface AuthContextType {
@@ -12,4 +8,8 @@ export interface AuthContextType {
     loading: boolean;
 }
 
+export interface AppUser {
+    email: string,
+    role: UserRole;
+}
 // ... any other project-specific types and interfaces ...

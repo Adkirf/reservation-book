@@ -35,6 +35,8 @@ This document outlines the steps required to implement the employee flow for the
   - [ ] Handle delete action
   - [ ] Remove reservation data from Firebase
 
+  - [ ] **Implement Client-side Firestore caching and offline support** 
+
 ## Notes
 - Follow the steps in the order listed to ensure a smooth implementation process.
 - Refer to the `overview.md` for the overall project structure and additional context.
