@@ -4,41 +4,31 @@ This document outlines the steps required to create the MVP of the reservation m
 
 reservation-book/
 ├── public/
-│   ├── fonts/
-│   │   ├── GeistVF.woff
-│   │   └── GeistMonoVF.woff
-│   └── images/
-│       └── logo.svg
+│   └── fonts/
+│       ├── GeistVF.woff
+│       └── GeistMonoVF.woff
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   ├── globals.css
-│   │   └── components/
-│   │       ├── Dashboard/
-│   │       │   ├── MonthlyView.tsx
-│   │       │   ├── WeeklyView.tsx
-│   │       │   └── DailyView.tsx
-│   │       ├── Reservation/
-│   │       │   ├── AddReservationForm.tsx
-│   │       │   ├── EditReservationForm.tsx
-│   │       │   └── ReservationModal.tsx
-│   │       └── UserManagement/
-│   │           ├── UserList.tsx
-│   │           └── AddUserForm.tsx
-│   ├── components/
-│   │   └── AuthProvider.tsx
-│   ├── lib/
-│   │   ├── firebase.ts
-│   │   └── auth.ts
-│   ├── pages/
 │   │   ├── api/
 │   │   │   └── auth/
 │   │   │       └── [...nextauth].ts
-│   │   ├── login.tsx
-│   │   └── _app.tsx
-│   └── styles/
-│       └── tailwind.css
+│   │   ├── dashboard/
+│   │   │   └── page.tsx
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   ├── admin/
+│   │   │   └── page.tsx
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/
+│   │   ├── Dashboard/
+│   │   │   ├── MonthlyView.tsx
+│   │   │   ├── WeeklyView.tsx
+│   │   │   └── DailyView.tsx
+│   ├── lib/
+│   │   ├── firebase.ts
+│   │   └── projectTypes.ts
 ├── .gitignore
 ├── next.config.mjs
 ├── package.json
@@ -48,12 +38,14 @@ reservation-book/
 └── documentation/
     ├── overview.md
     ├── setup.md
-    └── userflow.md
+    ├── userflow.md
+    ├── employeeflow.md
+    └── adminflow.md
 
 ## Steps to Create MVP
 
 - [x] **Setup**
-  - [x] Initialize Next.js project
+  - [x] Initialize Next.js project with App Router
   - [x] Setup TypeScript
   - [x] Configure Tailwind CSS
   - [x] Setup Firebase Authentication
@@ -61,18 +53,18 @@ reservation-book/
 - [ ] **User Flow**
   - [x] Implement Firebase Authentication
   - [x] Create AuthProvider component
-  - [ ] Create login page
+  - [ ] Create login page (app/login/page.tsx)
   - [ ] Handle user roles (admin, employee)
 
 - [ ] **Employee Flow**
-  - [ ] Create dashboard view with monthly, weekly, and daily views
-  - [ ] Prefill "add reservation form" based on current view
-  - [ ] Implement "add reservation" functionality
-  - [ ] Implement "edit reservation" functionality
-  - [ ] Implement "delete reservation" functionality
+  - [ ] Create dashboard page with view selection (monthly, weekly, daily)
+  - [ ] Implement MonthlyView component
+  - [ ] Implement WeeklyView component
+  - [ ] Implement DailyView component
+  - [ ] Add state management for switching between views
 
 -   [ ] **Admin Flow**
-  - [ ] Create user management page
+  - [ ] Create user management page (app/admin/page.tsx)
   - [ ] Implement "delete user" functionality
   - [ ] Implement "create user" functionality
 
@@ -85,6 +77,11 @@ reservation-book/
   - [ ] Implement toast notifications for success/error messages
   - [ ] Add inline form validation feedback
   - [ ] Create error boundary components for graceful error handling
+
+- [ ] **API Development**
+  - [ ] Implement authentication API routes
+  - [ ] Create reservation management API routes
+  - [ ] Develop user management API routes
 
 ## Notes
 - Focus on getting a working version of the app.
