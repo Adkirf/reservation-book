@@ -9,8 +9,10 @@ import { ReservationProvider } from '@/contexts/ReservationProvider';
 
 type ViewType = 'monthly' | 'weekly' | 'daily';
 
-export default function Dashboard() {
+
+export default function CalendarPage() {
     const [currentView, setCurrentView] = useState<ViewType>('monthly');
+
 
     return (
         <ProtectedRoute allowedRoles={['employee', 'admin']}>

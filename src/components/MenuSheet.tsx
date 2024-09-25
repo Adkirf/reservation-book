@@ -6,8 +6,70 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { PanelLeft, Package2, Home, ShoppingCart, Package, Users2, LineChart } from "lucide-react"
+import { PanelLeft, Package2, Home, Calendar, Book, HelpCircle, Settings } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from 'next/navigation'
+import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/AuthProvider"
+import SignOutButton from "./SignOutButton"
+
+const menuItems = [
+  { href: "/", icon: Home, label: "Home" },
+  { href: "/calendar", icon: Calendar, label: "Calendar" },
+  { href: "/reservations", icon: Book, label: "All Reservations" },
+  { href: "/support", icon: HelpCircle, label: "Support" },
+]
+
+function MenuContent() {
+  const pathname = usePathname()
+  const { role } = useAuth()
+
+  return (
+    <div className="flex flex-col h-full">
+      <nav className="grid gap-6 text-lg font-medium">
+        <Link
+          href="/"
+          className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+        >
+          <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
+          <span className="sr-only">Acme Inc</span>
+        </Link>
+        {menuItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex items-center gap-4 px-2.5 transition-colors",
+              pathname === item.href
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <item.icon className="h-5 w-5" />
+            {item.label}
+          </Link>
+        ))}
+        {role === 'admin' && (
+          <Link
+            href="/admin"
+            className={cn(
+              "flex items-center gap-4 px-2.5 transition-colors",
+              pathname === "/admin"
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Settings className="h-5 w-5" />
+            Admin
+          </Link>
+        )}
+      </nav>
+      <div className="mt-auto pt-6">
+        <SignOutButton />
+      </div>
+    </div>
+  )
+}
 
 export function MenuSheetComponent() {
   return (
@@ -18,52 +80,17 @@ export function MenuSheetComponent() {
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="sm:max-w-xs">
-        <nav className="grid gap-6 text-lg font-medium">
-          <Link
-            href="#"
-            className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-          >
-            <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
-            <span className="sr-only">Acme Inc</span>
-          </Link>
-          <Link
-            href="#"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
-            <Home className="h-5 w-5" />
-            Dashboard
-          </Link>
-          <Link
-            href="#"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
-            <ShoppingCart className="h-5 w-5" />
-            Orders
-          </Link>
-          <Link
-            href="#"
-            className="flex items-center gap-4 px-2.5 text-foreground"
-          >
-            <Package className="h-5 w-5" />
-            Products
-          </Link>
-          <Link
-            href="#"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
-            <Users2 className="h-5 w-5" />
-            Customers
-          </Link>
-          <Link
-            href="#"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
-            <LineChart className="h-5 w-5" />
-            Settings
-          </Link>
-        </nav>
+      <SheetContent side="left" className="sm:max-w-xs flex flex-col">
+        <MenuContent />
       </SheetContent>
     </Sheet>
+  )
+}
+
+export function MenuSidebar() {
+  return (
+    <div className="hidden sm:flex sm:flex-col sm:w-64 sm:border-r sm:p-6 sm:h-screen">
+      <MenuContent />
+    </div>
   )
 }

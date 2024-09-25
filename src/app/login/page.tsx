@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { signInWithGoogle } from '@/lib/firebase/auth';
 import { useRouter } from 'next/navigation';
+import { LoginForm } from '@/components/Login';
 
 export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
@@ -18,9 +19,8 @@ export default function LoginPage() {
     };
 
     return (
-        <div>
-            <h1>Login</h1>
-            <button onClick={handleSignIn}>Sign in with Google</button>
+        <div className="flex flex-col items-center justify-center min-h-screen py-2 px-4">
+            <LoginForm />
             {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
     );

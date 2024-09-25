@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -7,9 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-
+import { signInWithGoogle } from "@/lib/firebase/auth"
 
 export function LoginForm() {
     return (
@@ -17,21 +17,14 @@ export function LoginForm() {
             <CardHeader>
                 <CardTitle className="text-2xl">Login</CardTitle>
                 <CardDescription>
-                    Enter your email below to login to your account.
+                    You can only login if your employee has registered you.
                 </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="m@example.com" required />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" required />
-                </div>
+
             </CardContent>
             <CardFooter>
-                <Button className="w-full">Sign in</Button>
+                <Button onClick={signInWithGoogle} className="w-full">Sign in with google</Button>
             </CardFooter>
         </Card>
     )
