@@ -22,7 +22,7 @@ export function AddReservationButton() {
                 name: 'New Reservation',
                 contact: '',
                 numberOfPeople: 1,
-                notes: '',
+                comment: '',
             };
 
             await addReservation(newReservation);

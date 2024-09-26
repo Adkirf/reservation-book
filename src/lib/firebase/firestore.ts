@@ -61,7 +61,7 @@ export const getReservationsByMonth = async (year: number, month: number): Promi
             const data = doc.data();
             return {
                 id: doc.id,
-                date: (data.date as Timestamp).toDate(),
+                date: (data.date).toDate(),
                 name: data.name,
                 contact: data.contact,
                 numberOfPeople: data.numberOfPeople,

@@ -1,6 +1,6 @@
 1. Create Overview.md
 @Codebase 
-I want to develop an nextjs app for small-to-medium gastronomy businesses to efficiently manage reservations. It offers an intuitive interface to handle key reservation tasks: adding, editing, and deleting reservations. The app supports two types of users: admins, who can manage users and reservations, and employees, who can manage only the reservation system. The desired flows are: 
+I want to develop a minimalistic nextjs app for small-to-medium gastronomy businesses to efficiently manage reservations. It offers an intuitive interface to handle key reservation tasks: adding, editing, and deleting reservations. The app supports two types of users: admins, who can manage users and reservations, and employees, who can manage only the reservation system. The desired flows are: 
 1. User Flow: Anyone can open the webapp, enter email and password, authenticate via Firebase Authentication and if successful receive a role.  
 2. Employee Flow:
 - Employees have access to a dashboard view Monthly, weekly and daily view to reservation book. Depending on current view, the “add reservation form” is prefilled with data.  
@@ -57,42 +57,34 @@ Please review the @admingflow.md SOP file and compare it to the folder structure
 @Codebase @overview.md 
 Review the folde structure in the overview.md file to follow exactly the instructions in @setup.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, and give suggestions when a new file would improve the overall structure. 
 
+@Codebase Please review the current project's structure and update the folder structure outlines in the @overview.md accordingly. 
+
 10. Implement userflow.md
 @Codebase @overview.md 
 Review the folde structure in the overview.md file to follow exactly the instructions in @userflow.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, do NOT create new files, only suggest when a new file would improve the overall structure. 
+
+@Codebase Please review the current project's structure and update the folder structure outlines in the @overview.md accordingly. 
 
 11. Implement employeeflow.md
 @Codebase @overview.md 
 Review the folde structure in the overview.md file to follow exactly the instructions in @employeeflow.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, do NOT create new files, only suggest when a new file would improve the overall structure.
 
+@Codebase Please review the current project's structure and update the folder structure outlines in the @overview.md accordingly. 
+
 12. Implement adminflow.md
 @Codebase @overview.md 
+Review the folde structure in the overview.md file to follow exactly the instructions in @adminflow.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, do NOT create new files, only suggest when a new file would improve the overall structure.
 
-6. Implement frontend.md
-@Codebase @overview.md 
-Please review the overview and @frontend.md SOP files and work through the steps in Main Layout Component and Home Page one by one to create and update all the necessary files and functions.
- - @Codebase @overview.md 
-Follow exactly the instructions in @ImplementWalletConnect.md to work through the steps in Implemement WalleConnect in the @frontend.md SOP, to create and update all the necessary files functions. 
-- @Codebase @overview.md
-Follow exactly the instructions in @ImplementSIWE.md  to work through the steps in SIWE and One-Click Auth in the @frontend.md SOP, to create and update all the necessary files functions. 
-- @Codebase @overview.md 
-Please review the overview.md and @frontend.md SOP files and work through the steps in Final Review one by one and update all the necessary files and functions.
-- @Codebase @overview.md 
-Please review the @AboutSIWE.md and @frontend.md SOP and answer the Questions one by one.  
-- @Codebase @overview.md 
-Follow exactly the instructions in @WagmiSendTransaction.md to work through the steps in Transaction Form Component in the @frontend.md SOP, to create and update all the necessary files functions. 
-
-7. Create backend.md
-@Codebase @overview.md 
-Please review the overview SOP and create a backend.md SOP file which will break down the steps that we need to complete for the Backend Development in more detail. Consider that we are using a mock blockchain with the following user flow: Authenticated users can mint an NFT for 0.05 ETH, transaction request is submitted to wallet, user approves or declines, all information of approved or declined transaction are stored to local mock blockchain. All NFT related transactions need to be send to NFT smart contract adress, and update the information accoridngly. 
+@Codebase Please review the current project's structure and update the folder structure outlines in the @overview.md accordingly. 
 
 
-8. Implmenent backend.md
-@codebase @overview.md 
-Please review the overview and @backend.md SOP files and work through the steps one by one to create and update all the necessary files and functions. 
-    (Before continuing, please check again @Codebase , the @backend.md and our current chat to mark our current progress with the corresponding checkmarks. )
-    (@Codebase @overview.md 
-    Please review the overview and @backend.md SOP files and work through the unfinished steps on by one to create and update all the necessary files and functions. )
+
+
+
+(Consider adding pagination or infinite scrolling to the UserList component if you expect a large number of users.
+Implement error handling and success messages for user deletion.
+Add input validation for the email field when creating a new user.
+Consider adding a search or filter functionality to the UserList component.)
 
 
 
@@ -100,40 +92,5 @@ Please review the overview and @backend.md SOP files and work through the steps 
 
  
 
-
-
-
-## Transaction History Component
-- [ ] Create TransactionHistory component in src/components/transactions/TransactionHistory.tsx
-- [ ] Implement a list or table to display transaction history
-- [ ] Add pagination or infinite scroll for large transaction lists
-- [ ] Include filters for transaction type, date range, etc.
-- [ ] Display transaction details (amount, sender, recipient, date, status)
-
-## NFT Gallery Component
-- [ ] Create NFTGallery component in src/components/nft/NFTGallery.tsx
-- [ ] Implement a grid or list view to display owned NFTs
-- [ ] Add individual NFT cards with image, name, and basic details
-- [ ] Implement pagination or infinite scroll for large NFT collections
-- [ ] Add a search or filter functionality for NFTs
-
-## NFT Transfer Component
-- [ ] Create NFTTransfer component in src/components/nft/NFTTransfer.tsx
-- [ ] Design form for selecting an NFT to transfer
-- [ ] Implement recipient address input and validation
-- [ ] Add submit button to initiate NFT transfer
-- [ ] Display loading state during transfer processing
-
-## UI Enhancements
-- [ ] Apply consistent styling using Tailwind CSS
-- [ ] Integrate shadcn UI components where appropriate
-- [ ] Ensure responsive design for all components
-- [ ] Implement dark mode toggle (if desired)
-- [ ] Add loading skeletons or placeholders for async content
-
-## Error Handling and User Feedback
-- [ ] Implement toast notifications for success/error messages
-- [ ] Add inline form validation feedback
-- [ ] Create error boundary components for graceful error handling
 
 

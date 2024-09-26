@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentSingleTabManager } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -13,7 +13,9 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
 const auth = getAuth(app);
 
 // Initialize Firestore with persistent cache and long polling
@@ -24,4 +26,6 @@ const db = initializeFirestore(app, {
     })
 });
 
-export { auth, db };
+const storage = getStorage(app);
+
+export { app, auth, db, storage };

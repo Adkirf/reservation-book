@@ -4,10 +4,18 @@ import { useState } from 'react';
 import { signInWithGoogle } from '@/lib/firebase/auth';
 import { useRouter } from 'next/navigation';
 import { LoginForm } from '@/components/Login';
+import { useAuth } from '@/contexts/AuthProvider';
 
 export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+    const { user } = useAuth();
+
+    // Redirect to dashboard if already logged in
+    if (user) {
+        router.replace('/dashboard');
+        return null;
+    }
 
     const handleSignIn = async () => {
         try {

@@ -17,8 +17,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
         if (!loading) {
             if (!user) {
                 router.replace('/login');
-            } else if (allowedRoles.length > 0 && !allowedRoles.includes(role as string)) {
-                router.replace('/dashboard');
+            } else if (!allowedRoles.includes(role as string)) {
+                router.replace('/');
             }
         }
     }, [user, role, loading, router, allowedRoles]);
@@ -27,7 +27,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
         return <div>Loading...</div>;
     }
 
-    if (!user || (allowedRoles.length > 0 && !allowedRoles.includes(role as string))) {
+    if (!user || !allowedRoles.includes(role as string)) {
         return <div>Not authorized.</div>;
     }
 
