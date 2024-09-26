@@ -106,6 +106,8 @@ export const fetchItemsForMonth = async (month: Month, year: number): Promise<{ 
     const startOfMonth = new Date(year, monthIndex, 1);
     const endOfMonth = new Date(year, monthIndex + 1, 0, 23, 59, 59);
 
+    console.log('Fetching items for:', { month, year, startOfMonth, endOfMonth });
+
     const itemsQuery = query(
         collection(db, 'items'),
         where('dateStart', '>=', Timestamp.fromDate(startOfMonth)),
@@ -115,10 +117,13 @@ export const fetchItemsForMonth = async (month: Month, year: number): Promise<{ 
     try {
         const itemsSnapshot = await getDocs(itemsQuery);
 
+        console.log('Query returned:', itemsSnapshot.size, 'documents');
+
         const reservations: Reservation[] = [];
         const tasks: Task[] = [];
 
         itemsSnapshot.forEach((doc) => {
+            console.log('Document data:', doc.data());
             const data = doc.data() as dbItem;
             if ('numberOfPeople' in data) {
                 reservations.push(data as Reservation);
@@ -126,6 +131,8 @@ export const fetchItemsForMonth = async (month: Month, year: number): Promise<{ 
                 tasks.push(data as Task);
             }
         });
+
+        console.log('Processed items:', { reservations, tasks });
 
         return { reservations, tasks };
     } catch (error) {

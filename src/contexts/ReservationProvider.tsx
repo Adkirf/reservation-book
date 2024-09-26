@@ -1,18 +1,18 @@
-import { dbItem, Month, Months, Reservation, Task } from '@/lib/projectTypes';
+import { dbItem, Month, Months } from '@/lib/projectTypes';
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
 import { fetchItemsForMonth } from '@/lib/firebase/firestore';
 
-
-
 // Define the shape of the reservation context
 export interface ReservationContextType {
-    reservations: Reservation[];
-    tasks: Task[];
+    items: dbItem[];
     currentItem: dbItem | null;
     currentMonth: Month;
+    currentYear: number;
     isLoading: boolean;
     setCurrentMonth: (month: Month) => void;
+    setCurrentYear: (year: number) => void;
+    setItems: React.Dispatch<React.SetStateAction<dbItem[]>>;
     refreshItems: () => Promise<void>;
 }
 
@@ -40,42 +40,42 @@ interface ReservationProviderProps {
  * Wraps child components with ReservationContext.Provider
  */
 export const ReservationProvider: React.FC<ReservationProviderProps> = ({ children }) => {
-    const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const [items, setItems] = useState<dbItem[]>([]);
     const [currentItem, setCurrentItem] = useState<dbItem | null>(null);
     const [currentMonth, setCurrentMonth] = useState<Month>(Months[new Date().getMonth()]);
+    const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const { user } = useAuth();
 
     const fetchItemsForCurrentMonth = useCallback(async () => {
         setIsLoading(true);
-        const currentYear = new Date().getFullYear();
-
         try {
-            const { reservations: fetchedReservations, tasks: fetchedTasks } = await fetchItemsForMonth(currentMonth, currentYear);
-            setReservations(fetchedReservations);
-            setTasks(fetchedTasks);
+            const { reservations, tasks } = await fetchItemsForMonth(currentMonth, currentYear);
+            console.log('Fetched items:', { reservations, tasks });
+            setItems([...reservations, ...tasks]);
         } catch (error) {
             console.error('Error fetching items:', error);
         } finally {
             setIsLoading(false);
         }
-    }, [currentMonth]);
+    }, [currentMonth, currentYear]);
 
     useEffect(() => {
         if (user) {
             fetchItemsForCurrentMonth();
         }
-    }, [user, currentMonth, fetchItemsForCurrentMonth]);
+    }, [user, currentMonth, currentYear, fetchItemsForCurrentMonth]);
 
     const contextValue: ReservationContextType = {
-        reservations,
-        tasks,
+        items,
         currentItem,
         currentMonth,
+        currentYear,
         isLoading,
         setCurrentMonth,
+        setCurrentYear,
+        setItems,
         refreshItems: fetchItemsForCurrentMonth,
     };
 
