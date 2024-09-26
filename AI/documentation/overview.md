@@ -24,23 +24,24 @@ reservation-book/
 │   │   │   ├── MonthlyView.tsx
 │   │   │   └── WeeklyView.tsx
 │   │   ├── Reservation/
+│   │   │   ├── AddReservationButton.tsx
 │   │   │   ├── AddReservationForm.tsx
-│   │   │   ├── EditReservationForm.tsx
-│   │   │   └── ReservationModal.tsx
+│   │   │   ├── ReservationEdit.tsx
+│   │   │   ├── ReservationList.tsx
+│   │   │   └── ReservationTable.tsx
 │   │   ├── UserManagement/
 │   │   │   ├── AddUserForm.tsx
+│   │   │   ├── Login.tsx
 │   │   │   └── UserList.tsx
-│   │   ├── AddReservationButton.tsx
-│   │   ├── Login.tsx
-│   │   ├── MenuSheet.tsx
-│   │   ├── MonthSelector.tsx
-│   │   ├── ProtectedRoute.tsx
-│   │   ├── ReservationEdit.tsx
-│   │   ├── ReservationList.tsx
-│   │   ├── ReservationTable.tsx
-│   │   └── SignOutButton.tsx
+│   │   ├── ui/
+│   │   │   ├── badge.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   └── dropdown-menu.tsx
+│   │   └── MenuSheet.tsx
 │   ├── contexts/
 │   │   ├── AuthProvider.tsx
+│   │   ├── ProtectedRoute.tsx
 │   │   └── ReservationProvider.tsx
 │   └── lib/
 │       ├── firebase/

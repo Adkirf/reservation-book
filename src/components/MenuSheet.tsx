@@ -11,8 +11,10 @@ import Link from "next/link"
 import { usePathname } from 'next/navigation'
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthProvider"
-import SignOutButton from "./SignOutButton"
+import SignOutButton from "./UserManagement/SignOutButton"
+import { signOut } from "@/lib/firebase/auth";
 
+// Define menu items with their respective icons and routes
 const menuItems = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/calendar", icon: Calendar, label: "Calendar" },
@@ -20,6 +22,7 @@ const menuItems = [
   { href: "/support", icon: HelpCircle, label: "Support" },
 ]
 
+// MenuContent component: Renders the content of the menu (used in both sheet and sidebar)
 function MenuContent() {
   const pathname = usePathname()
   const { role } = useAuth()
@@ -27,6 +30,7 @@ function MenuContent() {
   return (
     <div className="flex flex-col h-full">
       <nav className="grid gap-6 text-lg font-medium">
+        {/* Logo/Home link */}
         <Link
           href="/"
           className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
@@ -34,6 +38,7 @@ function MenuContent() {
           <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
           <span className="sr-only">Acme Inc</span>
         </Link>
+        {/* Render menu items */}
         {menuItems.map((item) => (
           <Link
             key={item.href}
@@ -49,6 +54,7 @@ function MenuContent() {
             {item.label}
           </Link>
         ))}
+        {/* Conditionally render Admin link for admin users */}
         {role === 'admin' && (
           <Link
             href="/admin"
@@ -64,13 +70,15 @@ function MenuContent() {
           </Link>
         )}
       </nav>
+      {/* Sign out button at the bottom of the menu */}
       <div className="mt-auto pt-6">
-        <SignOutButton />
+        <Button onClick={signOut}>Sign Out</Button>;
       </div>
     </div>
   )
 }
 
+// MenuSheetComponent: Renders a slide-out sheet menu for mobile devices
 export function MenuSheetComponent() {
   return (
     <Sheet>
@@ -87,6 +95,7 @@ export function MenuSheetComponent() {
   )
 }
 
+// MenuSidebar: Renders a fixed sidebar menu for larger screens
 export function MenuSidebar() {
   return (
     <div className="hidden sm:flex sm:flex-col sm:w-64 sm:border-r sm:p-6 sm:h-screen">
