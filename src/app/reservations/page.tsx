@@ -23,6 +23,8 @@ export default function ReservationsPage() {
         updateFilters
     } = useReservationFilters(items);
 
+    console.log('Reservations page re-rendered, items:', filteredItems);
+
     useEffect(() => {
         updateFilters();
     }, [items, updateFilters]);

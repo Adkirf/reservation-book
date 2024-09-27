@@ -1,14 +1,17 @@
 'use client'
 
+import { useState } from "react"; // Add this import
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { MenuSheetComponent } from "@/components/MenuSheet";
 import { MenuSidebar } from "@/components/MenuSheet";
-import { AddReservationButton } from "@/components/Reservation/AddReservationButton"
+import { AddItemIcon } from "@/components/Reservation/AddItemIcon"; // Update this import
+import { AddItemForm } from "@/components/Reservation/AddItemForm"; // Add this import
 import { ProtectedRoute } from '@/contexts/ProtectedRoute';
 import { usePathname } from 'next/navigation';
 import { ReservationProvider } from '@/contexts/ReservationProvider';
+import { Drawer } from "@/components/ui/drawer";
 
 // Load custom fonts for the application
 const geistSans = localFont({
@@ -31,6 +34,17 @@ export default function RootLayout({
   const pathname = usePathname();
   // Check if the current page is the login page
   const isLoginPage = pathname === '/login';
+
+  // Add state for managing the form visibility
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const handleOpenForm = () => {
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+  };
 
   return (
     <html lang="en" className="h-full">
@@ -63,8 +77,11 @@ export default function RootLayout({
                       {children}
                     </main>
 
-                    {/* Add the new AddReservationButton component here */}
-                    <AddReservationButton />
+                    {/* Add the AddItemIcon component */}
+                    <Drawer>
+                      <AddItemIcon />
+                      <AddItemForm onClose={handleCloseForm} />
+                    </Drawer>
                   </div>
                 </div>
               </ReservationProvider>

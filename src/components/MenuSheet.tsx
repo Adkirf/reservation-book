@@ -24,7 +24,7 @@ const menuItems = [
 // MenuContent component: Renders the content of the menu (used in both sheet and sidebar)
 function MenuContent() {
   const pathname = usePathname()
-  const { role } = useAuth()
+  const { user } = useAuth()
 
   return (
     <div className="flex flex-col h-full">
@@ -54,7 +54,7 @@ function MenuContent() {
           </Link>
         ))}
         {/* Conditionally render Admin link for admin users */}
-        {role === 'admin' && (
+        {user?.role === 'admin' && (
           <Link
             href="/admin"
             className={cn(

@@ -145,4 +145,17 @@ export const fetchItemsForMonth = async (month: Month, year: number): Promise<{ 
     }
 };
 
+export const addItem = async (item: Omit<dbItem, 'id'>): Promise<string> => {
+    try {
+        const docRef = await addDoc(collection(db, 'items'), {
+            ...item,
+            dateStart: Timestamp.fromDate(item.dateStart),
+            dateEnd: Timestamp.fromDate(item.dateEnd),
+        });
+        return docRef.id;
+    } catch (error) {
+        console.error('Error adding item:', error);
+        throw error;
+    }
+};
 

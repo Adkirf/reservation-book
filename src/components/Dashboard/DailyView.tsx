@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import AddReservationForm from '../Reservation/AddReservationForm';
 
 export default function DailyView() {
     const [showAddForm, setShowAddForm] = useState(false);
@@ -14,10 +13,7 @@ export default function DailyView() {
             >
                 Add Reservation
             </button>
-            {showAddForm && (
-                <AddReservationForm
-                />
-            )}
+
         </div>
     );
 }

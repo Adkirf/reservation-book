@@ -3,6 +3,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export const sortAndFilterDbItems = (items: dbItem[], options: FilterOptions): dbItem[] => {
+    console.log('sortAndFilterDbItems called with options:', options);
     let filteredItems = [...items];
 
     // Filter by type (All, Reservations, Tasks)

@@ -85,13 +85,15 @@ create new SOP file
 @SOP file
 1. required files, 
 
-2. existing files to be added
+2.files to be added
  @SOP file
 Follow exactly the intructions in the new SOP file to update the NewComponent.tsx. Do not make any changes outside the provided list of files.
 
 3. new files to be created, 
 @SOP file
 Follow exactly the intructions in the new SOP file to create the NewComponent.tsx. Do not make any changes outside the provided list of files. 
+
+
 
 
  

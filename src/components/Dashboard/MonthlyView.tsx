@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import AddReservationForm from '../Reservation/AddReservationForm';
 
 export default function MonthlyView() {
     const [showAddForm, setShowAddForm] = useState(false);
@@ -14,12 +13,7 @@ export default function MonthlyView() {
             >
                 Add Reservation
             </button>
-            {showAddForm && (
-                <AddReservationForm
-                    initialDate={new Date()}
-                    onClose={() => setShowAddForm(false)}
-                />
-            )}
+
         </div>
     );
 }

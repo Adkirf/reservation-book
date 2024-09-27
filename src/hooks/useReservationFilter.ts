@@ -44,6 +44,15 @@ export const useReservationFilters = (initialItems: dbItem[]) => {
         updateFilters();
     }, [sortConfig, selectedTab, searchQuery, visibleColumns]);
 
+    const sortedItems = useMemo(() => {
+        return sortAndFilterDbItems(initialItems, {
+            tab: selectedTab,
+            searchQuery,
+            visibleColumns,
+            sortConfig,
+        });
+    }, [initialItems, selectedTab, searchQuery, visibleColumns, sortConfig]);
+
     const updateFilters = useCallback(() => {
         const filteredItems = sortAndFilterDbItems(initialItems, {
             tab: selectedTab,
@@ -77,7 +86,8 @@ export const useReservationFilters = (initialItems: dbItem[]) => {
     };
 
     return {
-        items,
+        sortedItems,  // Add this
+        items: sortedItems,  // Replace the old 'items' with sortedItems
         selectedTab,
         setSelectedTab,
         searchQuery,

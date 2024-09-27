@@ -43,7 +43,7 @@ function capitalizeFirstLetter(string: string): string {
  * It allows for responsive design for different screen sizes.
  */
 export default function ReservationTable({ items, visibleColumns, title }: ReservationTableProps) {
-    const { sortConfig, requestSort } = useReservationFilters(items);
+    const { sortedItems, sortConfig, requestSort } = useReservationFilters(items);
 
     return (
         <Card>
@@ -73,7 +73,7 @@ export default function ReservationTable({ items, visibleColumns, title }: Reser
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {items.map((item, index) => (
+                        {sortedItems.map((item, index) => (
                             <TableRow key={index}>
                                 {visibleColumns.map((column) => (
                                     <TableCell key={column} className="whitespace-nowrap"> {/* Add whitespace-nowrap here */}
