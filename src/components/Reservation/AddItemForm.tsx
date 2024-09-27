@@ -18,7 +18,7 @@ interface AddItemFormProps {
 }
 
 export function AddItemForm({ onClose }: AddItemFormProps) {
-  const { currentItem, updateCurrentItem, resetCurrentItem, addNewItem } = useReservation()
+  const { addingItem, updateAddingItem, resetAddingItem, addNewItem } = useReservation()
   const [page, setPage] = useState(0)
   const [validity, setValidity] = useState<Record<keyof FormData, "valid" | "invalid" | "empty">>({
     type: "valid",
@@ -33,10 +33,10 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
   })
 
   useEffect(() => {
-    if (!currentItem) {
-      resetCurrentItem()
+    if (!addingItem) {
+      resetAddingItem()
     }
-  }, [currentItem, resetCurrentItem])
+  }, [addingItem, resetAddingItem])
 
   const validateField = (field: keyof FormData, value: any): "valid" | "invalid" | "empty" => {
     if (value === "" || value === null) return "empty"
@@ -62,27 +62,27 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
   }
 
   useEffect(() => {
-    if (currentItem) {
+    if (addingItem) {
       const newValidity: Record<keyof FormData, "valid" | "invalid" | "empty"> = {} as Record<keyof FormData, "valid" | "invalid" | "empty">
-      Object.keys(currentItem).forEach((key) => {
+      Object.keys(addingItem).forEach((key) => {
         const typedKey = key as keyof FormData
-        newValidity[typedKey] = validateField(typedKey, currentItem[typedKey])
+        newValidity[typedKey] = validateField(typedKey, addingItem[typedKey])
       })
       setValidity(newValidity)
     }
-  }, [currentItem])
+  }, [addingItem])
 
   const handleSubmit = async () => {
     const requiredFields: (keyof FormData)[] = ['type', 'name', 'dateStart', 'dateEnd']
-    if (currentItem?.type === 'reservation') {
+    if (addingItem?.type === 'reservation') {
       requiredFields.push('numberOfPeople')
     } else {
       requiredFields.push('assignedTo')
     }
 
-    if (requiredFields.every((field) => validity[field] === "valid") && currentItem) {
+    if (requiredFields.every((field) => validity[field] === "valid") && addingItem) {
       try {
-        await addNewItem(currentItem as Omit<dbItem, 'id'>);
+        await addNewItem(addingItem as Omit<dbItem, 'id'>);
         // Only close the drawer if the submission is successful
         onClose();
       } catch (error) {
@@ -106,8 +106,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
-              value={currentItem?.name || ""}
-              onChange={(e) => updateCurrentItem("name", e.target.value)}
+              value={addingItem?.name || ""}
+              onChange={(e) => updateAddingItem("name", e.target.value)}
               placeholder="Enter reservation name"
             />
           </div>
@@ -115,8 +115,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Label htmlFor="comment">Comment (Optional)</Label>
             <Textarea
               id="comment"
-              value={currentItem?.comment || ""}
-              onChange={(e) => updateCurrentItem("comment", e.target.value)}
+              value={addingItem?.comment || ""}
+              onChange={(e) => updateAddingItem("comment", e.target.value)}
               placeholder="Enter reservation details"
             />
           </div>
@@ -134,8 +134,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Input
               id="dateStart"
               type="datetime-local"
-              value={currentItem?.dateStart.toISOString().slice(0, 16) || ""}
-              onChange={(e) => updateCurrentItem("dateStart", new Date(e.target.value))}
+              value={addingItem?.dateStart.toISOString().slice(0, 16) || ""}
+              onChange={(e) => updateAddingItem("dateStart", new Date(e.target.value))}
             />
           </div>
           <div>
@@ -143,8 +143,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Input
               id="dateEnd"
               type="datetime-local"
-              value={currentItem?.dateEnd.toISOString().slice(0, 16) || ""}
-              onChange={(e) => updateCurrentItem("dateEnd", new Date(e.target.value))}
+              value={addingItem?.dateEnd.toISOString().slice(0, 16) || ""}
+              onChange={(e) => updateAddingItem("dateEnd", new Date(e.target.value))}
             />
           </div>
         </div>
@@ -161,8 +161,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Input
               id="numberOfPeople"
               type="number"
-              value={currentItem?.numberOfPeople || 1}
-              onChange={(e) => updateCurrentItem("numberOfPeople", parseInt(e.target.value))}
+              value={addingItem?.numberOfPeople || 1}
+              onChange={(e) => updateAddingItem("numberOfPeople", parseInt(e.target.value))}
               placeholder="Enter number of people"
             />
           </div>
@@ -170,8 +170,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Label htmlFor="contact">Contact (Optional)</Label>
             <Input
               id="contact"
-              value={currentItem?.contact?.join(', ') || ''}
-              onChange={(e) => updateCurrentItem("contact", e.target.value.split(',').map(s => s.trim()))}
+              value={addingItem?.contact?.join(', ') || ''}
+              onChange={(e) => updateAddingItem("contact", e.target.value.split(',').map(s => s.trim()))}
               placeholder="Enter contact information (comma-separated)"
             />
           </div>
@@ -191,8 +191,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
-              value={currentItem?.name || ""}
-              onChange={(e) => updateCurrentItem("name", e.target.value)}
+              value={addingItem?.name || ""}
+              onChange={(e) => updateAddingItem("name", e.target.value)}
               placeholder="Enter task name"
             />
           </div>
@@ -200,8 +200,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Label htmlFor="comment">Comment (Optional)</Label>
             <Textarea
               id="comment"
-              value={currentItem?.comment || ""}
-              onChange={(e) => updateCurrentItem("comment", e.target.value)}
+              value={addingItem?.comment || ""}
+              onChange={(e) => updateAddingItem("comment", e.target.value)}
               placeholder="Enter task details"
             />
           </div>
@@ -219,8 +219,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Input
               id="dateStart"
               type="datetime-local"
-              value={currentItem?.dateStart.toISOString().slice(0, 16) || ""}
-              onChange={(e) => updateCurrentItem("dateStart", new Date(e.target.value))}
+              value={addingItem?.dateStart.toISOString().slice(0, 16) || ""}
+              onChange={(e) => updateAddingItem("dateStart", new Date(e.target.value))}
             />
           </div>
           <div>
@@ -228,8 +228,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Input
               id="dateEnd"
               type="datetime-local"
-              value={currentItem?.dateEnd.toISOString().slice(0, 16) || ""}
-              onChange={(e) => updateCurrentItem("dateEnd", new Date(e.target.value))}
+              value={addingItem?.dateEnd.toISOString().slice(0, 16) || ""}
+              onChange={(e) => updateAddingItem("dateEnd", new Date(e.target.value))}
             />
           </div>
         </div>
@@ -245,8 +245,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Label htmlFor="assignedTo">Assigned To</Label>
             <Input
               id="assignedTo"
-              value={currentItem?.assignedTo || ""}
-              onChange={(e) => updateCurrentItem("assignedTo", e.target.value)}
+              value={addingItem?.assignedTo || ""}
+              onChange={(e) => updateAddingItem("assignedTo", e.target.value)}
               placeholder="Enter assignee ID"
             />
           </div>
@@ -254,8 +254,8 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Label htmlFor="reference">Reference (Optional)</Label>
             <Input
               id="reference"
-              value={currentItem?.reference || ""}
-              onChange={(e) => updateCurrentItem("reference", e.target.value)}
+              value={addingItem?.reference || ""}
+              onChange={(e) => updateAddingItem("reference", e.target.value)}
               placeholder="Enter reference ID (optional)"
             />
           </div>
@@ -264,7 +264,7 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
     },
   ]
 
-  const pages = currentItem?.type === "reservation" ? reservationPages : taskPages
+  const pages = addingItem?.type === "reservation" ? reservationPages : taskPages
 
   const getPageColor = (pageIndex: number) => {
     if (pageIndex > page) return "bg-gray-300" // Upcoming pages are always grey
@@ -287,9 +287,9 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
       <DrawerHeader>
         <DrawerTitle>
           <Select
-            value={currentItem?.type}
+            value={addingItem?.type}
             onValueChange={(value: ItemType) => {
-              updateCurrentItem("type", value)
+              updateAddingItem("type", value)
               setPage(0)
             }}
           >

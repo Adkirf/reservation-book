@@ -18,15 +18,15 @@ export type FormData = {
 // Define the shape of the reservation context
 export interface ReservationContextType {
     items: dbItem[];
-    currentItem: FormData | null;
+    addingItem: FormData | null; // Changed from currentItem to addingItem
     currentMonth: Month;
     currentYear: number;
     isLoading: boolean;
     setCurrentMonth: (month: Month) => void;
     setCurrentYear: (year: number) => void;
     setItems: React.Dispatch<React.SetStateAction<dbItem[]>>;
-    updateCurrentItem: (field: keyof FormData, value: any) => void;
-    resetCurrentItem: () => void;
+    updateAddingItem: (field: keyof FormData, value: any) => void; // Changed from updateCurrentItem
+    resetAddingItem: () => void; // Changed from resetCurrentItem
     refreshItems: () => Promise<void>;
     addNewItem: (item: Omit<dbItem, 'id'>) => Promise<void>;
 }
@@ -56,19 +56,19 @@ interface ReservationProviderProps {
  */
 export const ReservationProvider: React.FC<ReservationProviderProps> = ({ children }) => {
     const [items, setItems] = useState<dbItem[]>([]);
-    const [currentItem, setCurrentItem] = useState<FormData | null>(null);
+    const [addingItem, setAddingItem] = useState<FormData | null>(null); // Changed from currentItem
     const [currentMonth, setCurrentMonth] = useState<Month>(Months[new Date().getMonth()]);
     const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const { user } = useAuth();
 
-    const updateCurrentItem = useCallback((field: keyof FormData, value: any) => {
-        setCurrentItem((prev) => prev ? { ...prev, [field]: value } : null);
+    const updateAddingItem = useCallback((field: keyof FormData, value: any) => {
+        setAddingItem((prev) => prev ? { ...prev, [field]: value } : null);
     }, []);
 
-    const resetCurrentItem = useCallback(() => {
-        setCurrentItem({
+    const resetAddingItem = useCallback(() => {
+        setAddingItem({
             type: "reservation",
             name: "",
             dateStart: new Date(),
@@ -112,24 +112,24 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
                 await fetchItemsForCurrentMonth();
             }
 
-            resetCurrentItem();
+            resetAddingItem();
         } catch (error) {
             console.error('Error adding new item:', error);
             // Handle error (e.g., show an error message to the user)
         }
-    }, [currentMonth, currentYear, fetchItemsForCurrentMonth, resetCurrentItem]);
+    }, [currentMonth, currentYear, fetchItemsForCurrentMonth, resetAddingItem]);
 
     const contextValue: ReservationContextType = {
         items,
-        currentItem,
+        addingItem, // Changed from currentItem
         currentMonth,
         currentYear,
         isLoading,
         setCurrentMonth,
         setCurrentYear,
         setItems,
-        updateCurrentItem,
-        resetCurrentItem,
+        updateAddingItem, // Changed from updateCurrentItem
+        resetAddingItem, // Changed from resetCurrentItem
         refreshItems: fetchItemsForCurrentMonth,
         addNewItem,
     };

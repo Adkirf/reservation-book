@@ -5,10 +5,13 @@ import { useReservation } from '@/contexts/ReservationProvider';
 import { DrawerTrigger } from '@/components/ui/drawer';
 
 export function AddItemIcon() {
-    const { resetCurrentItem } = useReservation();
+    const { addingItem, resetAddingItem } = useReservation();
 
     const handleClick = () => {
-        resetCurrentItem();
+        // Only reset if there's no existing data
+        if (!addingItem) {
+            resetAddingItem();
+        }
     };
 
     return (
