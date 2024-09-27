@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Search } from 'lucide-react'
+import { Filter, Search } from 'lucide-react'
 import {
     Tabs,
     TabsList,
@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { dbItem } from '@/lib/projectTypes'
 import ReservationTable from './ReservationTable'
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 
 interface ReservationListProps {
     items: dbItem[];
@@ -28,7 +29,9 @@ interface ReservationListProps {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     visibleColumns: string[];
-    setVisibleColumns: React.Dispatch<React.SetStateAction<string[]>>;
+    allColumns: string[];
+    defaultColumns: string[];
+    toggleColumn: (column: string) => void;
 }
 
 export default function ReservationList({
@@ -38,7 +41,9 @@ export default function ReservationList({
     searchQuery,
     setSearchQuery,
     visibleColumns,
-    setVisibleColumns
+    allColumns,
+    defaultColumns,
+    toggleColumn
 }: ReservationListProps) {
     const [filteredItems, setFilteredItems] = useState<dbItem[]>(items);
 
@@ -55,19 +60,14 @@ export default function ReservationList({
         setSearchQuery(event.target.value);
     };
 
-    const toggleColumnVisibility = (column: string) => {
-        setVisibleColumns((prev) => {
-            if (prev.includes(column)) {
-                return prev.filter((col) => col !== column);
-            } else {
-                return [...prev, column];
-            }
-        });
+    // Function to capitalize the first letter of a string
+    const capitalizeFirstLetter = (string: string): string => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     };
 
     return (
         <div className="">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4">
                 <Input
                     type="text"
                     placeholder="Search..."
@@ -75,31 +75,38 @@ export default function ReservationList({
                     onChange={handleSearchChange}
                     className="max-w-sm"
                 />
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">Columns</Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {['name', 'dateStart', 'numberOfPeople', 'assignedTo'].map((column) => (
-                            <DropdownMenuCheckboxItem
-                                key={column}
-                                checked={visibleColumns.includes(column)}
-                                onCheckedChange={() => toggleColumnVisibility(column)}
-                            >
-                                {column}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+
             </div>
             <Tabs value={selectedTab} onValueChange={handleTabChange}>
-                <TabsList>
-                    <TabsTrigger value="All">All</TabsTrigger>
-                    <TabsTrigger value="Reservations">Reservations</TabsTrigger>
-                    <TabsTrigger value="Tasks">Tasks</TabsTrigger>
-                </TabsList>
+                <div className="flex justify-between items-center mb-4">
+                    <TabsList>
+                        <TabsTrigger value="All">All</TabsTrigger>
+                        <TabsTrigger value="Reservations">Reservations</TabsTrigger>
+                        <TabsTrigger value="Tasks">Tasks</TabsTrigger>
+                    </TabsList>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline"><Filter className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {allColumns.map((column) => (
+                                <DropdownMenuCheckboxItem
+                                    key={column}
+                                    checked={visibleColumns.includes(column)}
+                                    onCheckedChange={() => toggleColumn(column)}
+                                    disabled={visibleColumns.length === 1 && visibleColumns.includes(column)}
+                                    onSelect={(event) => {
+                                        event.preventDefault();
+                                    }}
+                                >
+                                    {column === 'numberOfPeople' ? 'Guests' : capitalizeFirstLetter(column)}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
                 <TabsContent value="All">
                     <ReservationTable
                         items={filteredItems}
@@ -116,7 +123,7 @@ export default function ReservationList({
                 </TabsContent>
                 <TabsContent value="Tasks">
                     <ReservationTable
-                        items={filteredItems.filter(item => 'assignedTo' in item)}
+                        items={filteredItems.filter(item => !('numberOfPeople' in item))}
                         visibleColumns={visibleColumns}
                         title="Tasks"
                     />

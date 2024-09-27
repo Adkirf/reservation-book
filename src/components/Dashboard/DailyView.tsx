@@ -16,8 +16,6 @@ export default function DailyView() {
             </button>
             {showAddForm && (
                 <AddReservationForm
-                    initialDate={new Date()}
-                    onClose={() => setShowAddForm(false)}
                 />
             )}
         </div>

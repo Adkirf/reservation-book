@@ -1,7 +1,7 @@
 import { getDoc, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from 'firebase/firestore';
 import { app } from './config'; // Assuming you have a Firebase app instance
 import { collection, addDoc, updateDoc, deleteDoc, doc, setDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
-import { dbItem, Month, Reservation, Task, AppUser } from '../projectTypes';
+import { dbItem, Month, Reservation, Task, AppUser, UserRole } from '../projectTypes';
 
 // Initialize Firestore with persistent cache
 export const db = initializeFirestore(app, {
@@ -36,15 +36,16 @@ export const getUser = async (email: string): Promise<AppUser | null> => {
  * Adds a new user to the Firestore database or updates an existing one
  * @param email - The user's email address (used as the document ID)
  * @param role - The user's role in the system
- * @returns The email of the added/updated user
+ * @returns The added/updated user data
  * @throws Error if the operation fails
  */
-export const addUser = async (email: string, role: string) => {
+export const addUser = async (email: string, role: UserRole, name: string): Promise<AppUser | null> => {
     try {
         const userRef = doc(db, 'users', email);
+        const userData: AppUser = { email, role, name };
         // Use setDoc with merge: true to update existing users or create new ones
-        await setDoc(userRef, { email, role }, { merge: true });
-        return email;
+        await setDoc(userRef, userData, { merge: true });
+        return userData;
     } catch (error) {
         console.error('Error adding user:', error);
         throw error; // Re-throw for handling in the UI layer
@@ -98,8 +99,11 @@ export const deleteReservation = async (id: string) => {
     }
 };
 
-
-
+export const convertFirestoreTimestamps = (item: any): dbItem => ({
+    ...item,
+    dateStart: item.dateStart instanceof Timestamp ? item.dateStart.toDate() : item.dateStart,
+    dateEnd: item.dateEnd instanceof Timestamp ? item.dateEnd.toDate() : item.dateEnd,
+});
 
 export const fetchItemsForMonth = async (month: Month, year: number): Promise<{ reservations: Reservation[], tasks: Task[] }> => {
     const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
@@ -124,7 +128,7 @@ export const fetchItemsForMonth = async (month: Month, year: number): Promise<{ 
 
         itemsSnapshot.forEach((doc) => {
             console.log('Document data:', doc.data());
-            const data = doc.data() as dbItem;
+            const data = convertFirestoreTimestamps(doc.data() as dbItem);
             if ('numberOfPeople' in data) {
                 reservations.push(data as Reservation);
             } else if ('assignedTo' in data) {

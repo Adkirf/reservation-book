@@ -4,13 +4,15 @@ import { ProtectedRoute } from '@/contexts/ProtectedRoute';
 import { useState } from 'react';
 import { addUser } from '@/lib/firebase/firestore';
 import UserList from '@/components/UserManagement/UserList';
+import { UserRole } from '@/lib/projectTypes';
 
 // Admin component for user management
 // This component allows admins to view existing users and add new ones
 export default function Admin() {
     // State for new user form
     const [email, setEmail] = useState('');
-    const [role, setRole] = useState('employee');
+    const [role, setRole] = useState<UserRole>('employee');
+    const [name, setName] = useState('');
     const [message, setMessage] = useState('');
 
     // Handler for adding a new user
@@ -18,7 +20,7 @@ export default function Admin() {
     const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await addUser(email, role);
+            await addUser(email, role, name);
             setMessage('User added successfully');
             // Reset form fields after successful addition
             setEmail('');
@@ -50,8 +52,8 @@ export default function Admin() {
                     />
                     {/* Role selection dropdown */}
                     <select
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
+                        value={role?.toString()}
+
                         className="w-full p-2 mb-2 border rounded"
                     >
                         <option value="employee">Employee</option>

@@ -11,7 +11,6 @@ import Link from "next/link"
 import { usePathname } from 'next/navigation'
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthProvider"
-import SignOutButton from "./UserManagement/SignOutButton"
 import { signOut } from "@/lib/firebase/auth";
 
 // Define menu items with their respective icons and routes

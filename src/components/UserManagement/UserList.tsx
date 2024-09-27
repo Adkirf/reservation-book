@@ -2,29 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
 import { AppUser } from '@/lib/projectTypes';
+import { useAuth } from '@/contexts/AuthProvider';
 
 export default function UserList() {
     const [users, setUsers] = useState<AppUser[]>([]);
+    const { loading, user } = useAuth();
+
 
     useEffect(() => {
-        const q = query(collection(db, 'users'));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const userList: AppUser[] = [];
-            querySnapshot.forEach((doc) => {
-                userList.push({ email: doc.id, ...doc.data() } as AppUser);
-            });
-            setUsers(userList);
-        });
+        if (!loading) {
 
-        return () => unsubscribe();
+        }
     }, []);
 
     const handleDeleteUser = async (email: string) => {
         if (confirm('Are you sure you want to delete this user?')) {
             try {
-                await deleteDoc(doc(db, 'users', email));
+
             } catch (error) {
                 console.error('Error deleting user:', error);
             }

@@ -45,3 +45,25 @@ src/components/MonthSelect.tsx
 - Update to use ReservationProvider.tsx and useReservationFilters.tsx   
 
 
+4. Omptimize reservations page
+- Date shows 28 - 30.08. 
+- different column options for different tab views:
+    - All: name, date, comment
+    - Reservations: name, date, number of people, comment
+    - Tasks: name , date, comment
+
+- different default columns, but other selectable
+    - All: name (default), date (default), comment 
+    - Reservations: name (default), date (default), number of people (default), comment
+    - Tasks: name (default), date, comment (default)
+
+- Sorting (Ascending/Descending):
+    - name: Alphabetical
+    - date: Sonnset dateStart / latest dateEnd
+    - comment: existing/non-existing
+    - number of people: least/most
+
+
+
+
+

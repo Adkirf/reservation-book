@@ -5,11 +5,17 @@ import { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { getUser } from '@/lib/firebase/firestore';
 import { useRouter } from 'next/navigation';
-import { AuthContextType, UserRole, AppUser } from '@/lib/projectTypes';
+import { UserRole, AppUser } from '@/lib/projectTypes';
 
 
 // Create a context for authentication state
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+
+export interface AuthContextType {
+    user: AppUser | null;
+    loading: boolean;
+}
 
 /**
  * Custom hook to access the auth context
@@ -28,8 +34,9 @@ export const useAuth = () => {
  * Provides auth context to child components
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [role, setRole] = useState<UserRole>(null);
+
+    const [user, setUser] = useState<AppUser | null>(null)
+
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
@@ -41,28 +48,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     const userData = await getUser(firebaseUser.email!);
                     if (userData) {
-                        console.log("User data:", userData);
-                        setUser(firebaseUser);
-                        setRole(userData.role as UserRole);
+                        setUser(userData);
                         console.log("Fetched user role:", userData.role);
                     } else {
                         // Handle case where user exists in Firebase Auth but not in Firestore
                         console.error("User document does not exist in Firestore");
                         await auth.signOut();
                         setUser(null);
-                        setRole(null);
                     }
                 } catch (error) {
                     // Handle errors in fetching user data
                     console.error("Error fetching user data:", error);
                     await auth.signOut();
                     setUser(null);
-                    setRole(null);
                 }
             } else {
                 // Reset state when user is not authenticated
                 setUser(null);
-                setRole(null);
             }
             setLoading(false);
         });
@@ -74,7 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Prepare context value
     const value = {
         user,
-        role,
         loading
     };
 

@@ -1,4 +1,5 @@
 import { User } from 'firebase/auth';
+import { Timestamp } from 'firebase/firestore';
 
 export type UserRole = 'admin' | 'employee' | null;
 export const Months = [
@@ -7,16 +8,17 @@ export const Months = [
 ];
 export type Month = typeof Months[number];
 
-export interface AuthContextType {
-    user: User | null;
-    role: UserRole;
-    loading: boolean;
-}
-
 export interface AppUser {
     email: string,
-    name: string,
+    name?: string,
     role: UserRole;
+}
+
+export interface FilterOptions {
+    tab: 'All' | 'Reservations' | 'Tasks';
+    searchQuery: string;
+    visibleColumns: string[];
+    sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
 }
 
 // Chat Message are between at least one user, and the admin. 
@@ -45,7 +47,7 @@ export interface Task extends dbItem {
 // Tasks are only visible 
 export interface dbItem {
     id: string;
-    name: string; // Name of task
+    name: string;
     dateStart: Date,
     dateEnd: Date,
     comment?: string,

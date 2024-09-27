@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useReservation } from '@/contexts/ReservationProvider';
 import { useReservationFilters } from '@/hooks/useReservationFilter';
 import ReservationList from '@/components/Reservation/ReservationList';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Months } from '@/lib/projectTypes';
 import MonthSelect from '@/components/MonthSelect';
 
@@ -18,7 +17,9 @@ export default function ReservationsPage() {
         searchQuery,
         setSearchQuery,
         visibleColumns,
-        setVisibleColumns,
+        allColumns,
+        defaultColumns,
+        toggleColumn,
         updateFilters
     } = useReservationFilters(items);
 
@@ -26,9 +27,7 @@ export default function ReservationsPage() {
         updateFilters();
     }, [items, updateFilters]);
 
-    const handleMonthChange = (value: string) => {
-        setCurrentMonth(Months[parseInt(value) - 1]);
-    };
+
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -51,7 +50,9 @@ export default function ReservationsPage() {
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
                         visibleColumns={visibleColumns}
-                        setVisibleColumns={setVisibleColumns}
+                        allColumns={allColumns}
+                        defaultColumns={defaultColumns}
+                        toggleColumn={toggleColumn}
                     />
                 </div>
             )}

@@ -57,7 +57,7 @@ Please review the @admingflow.md SOP file and compare it to the folder structure
 @Codebase @overview.md 
 Review the folde structure in the overview.md file to follow exactly the instructions in @setup.md. Implement the unfinished steps by updating the necessary files and function. Use existing code and files whereever possible, and give suggestions when a new file would improve the overall structure. 
 
-@Codebase Please review the current project's structure and update the folder structure outlines in the @overview.md accordingly. 
+Please follow the instructions in @update-overview.md and review the @src folder to update the @overview.md 
 
 10. Implement userflow.md
 @Codebase @overview.md 
@@ -77,6 +77,24 @@ Review the folde structure in the overview.md file to follow exactly the instruc
 
 @Codebase Please review the current project's structure and update the folder structure outlines in the @overview.md accordingly. 
 
+
+13. Implement Reservations page
+@new-FeatureFS @overiew.md
+create new SOP file
+
+@SOP file
+1. required files, 
+
+2. existing files to be added
+ @SOP file
+Follow exactly the intructions in the new SOP file to update the NewComponent.tsx. Do not make any changes outside the provided list of files.
+
+3. new files to be created, 
+@SOP file
+Follow exactly the intructions in the new SOP file to create the NewComponent.tsx. Do not make any changes outside the provided list of files. 
+
+
+ 
 
 
 
