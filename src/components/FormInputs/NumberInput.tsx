@@ -8,9 +8,10 @@ import { Minus, Plus } from "lucide-react"
 interface NumberInputProps {
   currentNumber: number;
   onNumberChange: (value: number) => void;
+  className?: string; // Add this line
 }
 
-export function NumberInput({ currentNumber, onNumberChange }: NumberInputProps) {
+export function NumberInput({ currentNumber, onNumberChange, className }: NumberInputProps) {
   const [value, setValue] = useState(currentNumber)
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export function NumberInput({ currentNumber, onNumberChange }: NumberInputProps)
   }
 
   return (
-    <div className="flex items-center">
+    <div className={`flex items-center ${className}`}> {/* Add className here */}
       <Button
         variant="outline"
         size="icon"

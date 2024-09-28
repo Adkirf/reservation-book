@@ -159,6 +159,7 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
               value={editingReservation?.name || ""}
               onChange={(e) => updateField("name", e.target.value)}
               placeholder="Enter reservation name"
+              className="text-base" // Add this class to increase font size
             />
           </div>
           <div>
@@ -168,6 +169,7 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
               value={editingReservation?.comment || ""}
               onChange={(e) => updateField("comment", e.target.value)}
               placeholder="Enter reservation details"
+              className="text-base" // Add this class to increase font size
             />
           </div>
         </div>
@@ -207,6 +209,7 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <NumberInput
               currentNumber={editingReservation?.numberOfPeople || 1}
               onNumberChange={(value) => updateField("numberOfPeople", value)}
+              className="text-base" // Add this class to increase font size
             />
           </div>
           <div>
@@ -216,6 +219,7 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
               value={editingReservation?.contact?.join(', ') || ''}
               onChange={(e) => updateField("contact", e.target.value.split(',').map(s => s.trim()))}
               placeholder="Enter contact information (comma-separated)"
+              className="text-base" // Add this class to increase font size
             />
           </div>
         </div>
@@ -252,7 +256,11 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
         <DrawerDescription>{pages[page].title}</DrawerDescription>
       </DrawerHeader>
       <div className="p-4 pb-0">
-        {editingReservation && pages[page].content}
+        {editingReservation && (
+          <div className="text-base"> {/* Add this wrapper with increased font size */}
+            {pages[page].content}
+          </div>
+        )}
       </div>
       <DrawerFooter className="flex justify-between items-center">
         <div className="flex space-x-2">

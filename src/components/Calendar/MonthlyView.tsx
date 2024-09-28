@@ -174,8 +174,9 @@ export function MobileCalendar() {
             key={day}
             className={`h-10 sm:h-12 flex items-center justify-center text-sm
               ${isWithinReservation(day) ? '-mx-[1px]' : ''}
-              ${isReservationStart(day) ? 'border-2 border-r-0 border-primary rounded-l-full' : ''}
-              ${isReservationEnd(day) ? 'border-2 border-l-0 border-primary rounded-r-full' : ''}
+              ${isReservationStart(day) && isReservationEnd(day) ? 'border-2 border-primary rounded-full' :
+                isReservationStart(day) ? 'border-2 border-r-0 border-primary rounded-l-full' :
+                  isReservationEnd(day) ? 'border-2 border-l-0 border-primary rounded-r-full' : ''}
               ${isWithinReservation(day) && !isReservationStart(day) && !isReservationEnd(day) ? 'border-t-2 border-b-2 border-primary' : ''}
               ${selectedDays.includes(day) ?
                 (isFirstSelected(day) || isLastSelected(day) ?

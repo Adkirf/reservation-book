@@ -32,10 +32,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
+  const isLoginPage = pathname === '/login'; // Define isLoginPage
 
   return (
-    <html lang="en" className="h-full">
+    <html lang="en">
+      <head>
+        {/* Add this meta tag */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >

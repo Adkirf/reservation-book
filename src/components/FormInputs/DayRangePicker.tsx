@@ -82,6 +82,9 @@ export default function DateRangePicker({
                         selected={date}
                         onSelect={handleDateSelect}
                         numberOfMonths={1}
+                        disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                        }
                     />
                 </PopoverContent>
             </Popover>
