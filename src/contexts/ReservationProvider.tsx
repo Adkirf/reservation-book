@@ -1,7 +1,7 @@
 import { dbItem, Month, Months, Reservation, Task } from '@/lib/projectTypes';
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
-import { fetchItemsForMonth, addItem } from '@/lib/firebase/firestore';
+import { fetchItemsForMonth, addItem, updateItem } from '@/lib/firebase/firestore'; // Assume this function exists to update items in Firestore
 
 export type FormData = {
     type: "reservation" | "task";
@@ -29,6 +29,10 @@ export interface ReservationContextType {
     resetAddingItem: () => void; // Changed from resetCurrentItem
     refreshItems: () => Promise<void>;
     addNewItem: (item: Omit<dbItem, 'id'>) => Promise<void>;
+    editingItem: dbItem | null;
+    setEditingItem: (item: dbItem | null) => void;
+    updateEditingItem: (field: keyof dbItem, value: any) => void;
+    saveEditingItem: () => Promise<void>;
 }
 
 // Create a context for reservation data
@@ -60,6 +64,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
     const [currentMonth, setCurrentMonth] = useState<Month>(Months[new Date().getMonth()]);
     const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [editingItem, setEditingItem] = useState<dbItem | null>(null);
 
     const { user } = useAuth();
 
@@ -119,6 +124,25 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         }
     }, [currentMonth, currentYear, fetchItemsForCurrentMonth, resetAddingItem]);
 
+    const updateEditingItem = useCallback((field: keyof dbItem, value: any) => {
+        setEditingItem((prev) => prev ? { ...prev, [field]: value } : null);
+    }, []);
+
+    const saveEditingItem = useCallback(async () => {
+        if (editingItem) {
+            try {
+                await updateItem(editingItem);
+                setItems((prevItems) =>
+                    prevItems.map((item) => (item.id === editingItem.id ? editingItem : item))
+                );
+                setEditingItem(null);
+            } catch (error) {
+                console.error('Error updating item:', error);
+                // Handle error (e.g., show an error message to the user)
+            }
+        }
+    }, [editingItem]);
+
     const contextValue: ReservationContextType = {
         items,
         addingItem, // Changed from currentItem
@@ -132,6 +156,10 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         resetAddingItem, // Changed from resetCurrentItem
         refreshItems: fetchItemsForCurrentMonth,
         addNewItem,
+        editingItem,
+        setEditingItem,
+        updateEditingItem,
+        saveEditingItem,
     };
 
     return (

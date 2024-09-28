@@ -18,7 +18,16 @@ import { format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useReservationFilters } from '@/hooks/useReservationFilter';
-
+import { useReservation } from '@/contexts/ReservationProvider';
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+} from "@/components/ui/popover"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { EditItemPopover } from './EditItemPopover';
 
 // Update the props interface for the ReservationTable component
 interface ReservationTableProps {
@@ -44,6 +53,28 @@ function capitalizeFirstLetter(string: string): string {
  */
 export default function ReservationTable({ items, visibleColumns, title }: ReservationTableProps) {
     const { sortedItems, sortConfig, requestSort } = useReservationFilters(items);
+    const { editingItem, setEditingItem, updateEditingItem, saveEditingItem } = useReservation();
+
+    const getDisplayValue = (item: dbItem, column: string) => {
+        if (column === 'date') {
+            return formatDateRange(item);
+        }
+        return (item as any)[column]?.toString() || '';
+    };
+
+    // Add this function to get all editable keys from a dbItem
+    const getEditableKeys = (item: dbItem): (keyof dbItem)[] => {
+        if ('assignedTo' in item) {
+            // It's a Task
+            return ['name', 'dateStart', 'assignedTo', 'comment'] as (keyof dbItem)[];
+        } else if ('numberOfPeople' in item) {
+            // It's a Reservation
+            return ['name', 'dateStart', , 'numberOfPeople', 'comment'] as (keyof dbItem)[];
+        } else {
+            // Default case, should not happen
+            return ['name', 'dateStart', 'comment'] as (keyof dbItem)[];
+        }
+    }
 
     return (
         <Card>
@@ -73,13 +104,14 @@ export default function ReservationTable({ items, visibleColumns, title }: Reser
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedItems.map((item, index) => (
-                            <TableRow key={index}>
+                        {sortedItems.map((item) => (
+                            <TableRow key={item.id}>
                                 {visibleColumns.map((column) => (
                                     <TableCell key={column} className="whitespace-nowrap"> {/* Add whitespace-nowrap here */}
-                                        {column === 'date'
-                                            ? formatDateRange(item)
-                                            : (item as any)[column]?.toString() || ''}
+                                        <EditItemPopover
+                                            item={item}
+                                            initialColumn={column}
+                                        />
                                     </TableCell>
                                 ))}
                             </TableRow>

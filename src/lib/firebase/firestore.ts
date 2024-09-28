@@ -159,3 +159,7 @@ export const addItem = async (item: Omit<dbItem, 'id'>): Promise<string> => {
     }
 };
 
+export const updateItem = async (item: Partial<dbItem>) => {
+
+};
+
