@@ -8,6 +8,9 @@ export const Months = [
 ];
 export type Month = typeof Months[number];
 
+export const allColumns = ['name', 'date', 'numberOfPeople', 'contact', 'comment'];
+export const defaultColumns = ['name', 'date', 'numberOfPeople'];
+
 export interface AppUser {
     email: string,
     name?: string,
@@ -15,7 +18,6 @@ export interface AppUser {
 }
 
 export interface FilterOptions {
-    tab: 'All' | 'Reservations' | 'Tasks';
     searchQuery: string;
     visibleColumns: string[];
     sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
@@ -27,28 +29,19 @@ export interface ChatMessage {
     message: string;
     sender: string; // id
     receiver: string[]; //ids
-    reference: string; //id of reservation or task
     timestamp: Date;
 }
 
-// Reservations extend one day and have a prefilled start and end time.
-// Visible to all users connected to DB, displayed.  
-export interface Reservation extends dbItem {
-    numberOfPeople: number,
-    contact?: string[],
-}
-
-export interface Task extends dbItem {
-    assignedTo: string; // id
-    reference?: string; // id of reservation or task
-}
 
 // Tasks are created by admins and assigned to users
 // Tasks are only visible 
-export interface dbItem {
+export type Reservation = {
     id: string;
     name: string;
-    dateStart: Date,
-    dateEnd: Date,
-    comment?: string,
+    dateStart: Date;
+    dateEnd: Date;
+    comment: string;
+    numberOfPeople: number;
+    contact: string[];
+    // Remove reference field
 }

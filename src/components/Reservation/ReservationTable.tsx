@@ -13,33 +13,28 @@ import {
     TableBody,
     TableCell,
 } from "@/components/ui/table"
-import { dbItem } from '@/lib/projectTypes'
+import { allColumns, Reservation } from '@/lib/projectTypes'
 import { format } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, Filter } from 'lucide-react';
 import { useReservationFilters } from '@/hooks/useReservationFilter';
 import { useReservation } from '@/contexts/ReservationProvider';
-import {
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-} from "@/components/ui/popover"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { EditItemPopover } from './EditItemPopover';
+import { Input } from "../ui/input";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
 
 // Update the props interface for the ReservationTable component
 interface ReservationTableProps {
-    items: dbItem[]
+    reservations: Reservation[]
     visibleColumns: string[]
-    title: string
+    searchQuery: string
+    setSearchQuery: (query: string) => void
+    toggleColumn: (column: string) => void
 }
 
 // Update the formatDateRange function to handle the new column name
-function formatDateRange(item: dbItem): string {
-    if (!item.dateStart || !item.dateEnd) return '';
-    return `${format(item.dateStart, 'dd')} - ${format(item.dateEnd, 'dd.MM')}`;
+function formatDateRange(reservation: Reservation): string {
+    if (!reservation.dateStart || !reservation.dateEnd) return '';
+    return `${format(reservation.dateStart, 'dd')} - ${format(reservation.dateEnd, 'dd.MM')}`;
 }
 
 // Function to capitalize the first letter of a string
@@ -48,40 +43,67 @@ function capitalizeFirstLetter(string: string): string {
 }
 
 /**
- * ReservationTable: A component that displays a table of dbItems with dynamic column visibility.
+ * ReservationTable: A component that displays a table of Reservations with dynamic column visibility.
  * It allows for responsive design for different screen sizes.
  */
-export default function ReservationTable({ items, visibleColumns, title }: ReservationTableProps) {
-    const { sortedItems, sortConfig, requestSort } = useReservationFilters(items);
-    const { editingItem, setEditingItem, updateEditingItem, saveEditingItem } = useReservation();
+export default function ReservationTable({ reservations, visibleColumns, searchQuery, setSearchQuery, toggleColumn }: ReservationTableProps) {
+    const { sortConfig, requestSort, formatDateRange } = useReservationFilters(reservations);
+    const { setEditingReservation } = useReservation();
 
-    const getDisplayValue = (item: dbItem, column: string) => {
-        if (column === 'date') {
-            return formatDateRange(item);
-        }
-        return (item as any)[column]?.toString() || '';
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
     };
 
-    // Add this function to get all editable keys from a dbItem
-    const getEditableKeys = (item: dbItem): (keyof dbItem)[] => {
-        if ('assignedTo' in item) {
-            // It's a Task
-            return ['name', 'dateStart', 'assignedTo', 'comment'] as (keyof dbItem)[];
-        } else if ('numberOfPeople' in item) {
-            // It's a Reservation
-            return ['name', 'dateStart', , 'numberOfPeople', 'comment'] as (keyof dbItem)[];
-        } else {
-            // Default case, should not happen
-            return ['name', 'dateStart', 'comment'] as (keyof dbItem)[];
+    const formatCellValue = (value: any, column: string): string => {
+        if (value === null || value === undefined) return '';
+
+        switch (column) {
+            case 'dateStart':
+            case 'dateEnd':
+                return value instanceof Date ? format(value, 'yyyy-MM-dd HH:mm') : String(value);
+            case 'contact':
+                return Array.isArray(value) ? value.join(', ') : String(value);
+            default:
+                return String(value);
         }
-    }
+    };
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
+                <div className="mb-4 flex flex-row gap-2">
+                    <Input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        className="max-w-sm"
+                    />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline"><Filter className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {allColumns.map((column) => (
+                                <DropdownMenuCheckboxItem
+                                    key={column}
+                                    checked={visibleColumns.includes(column)}
+                                    onCheckedChange={() => toggleColumn(column)}
+                                    disabled={visibleColumns.length === 1 && visibleColumns.includes(column)}
+                                    onSelect={(event) => {
+                                        event.preventDefault();
+                                    }}
+                                >
+                                    {column === 'numberOfPeople' ? 'Guests' : capitalizeFirstLetter(column)}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </CardHeader>
-            <CardContent className="overflow-x-auto"> {/* Add overflow-x-auto here */}
+            <CardContent className="overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -104,14 +126,15 @@ export default function ReservationTable({ items, visibleColumns, title }: Reser
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedItems.map((item) => (
-                            <TableRow key={item.id}>
+                        {reservations.map((reservation) => (
+                            <TableRow key={reservation.id}>
                                 {visibleColumns.map((column) => (
-                                    <TableCell key={column} className="whitespace-nowrap"> {/* Add whitespace-nowrap here */}
-                                        <EditItemPopover
-                                            item={item}
-                                            initialColumn={column}
-                                        />
+                                    <TableCell
+                                        key={column}
+                                        className="whitespace-nowrap cursor-pointer"
+                                        onClick={() => setEditingReservation(reservation)}
+                                    >
+                                        {formatCellValue(reservation[column as keyof Reservation], column)}
                                     </TableCell>
                                 ))}
                             </TableRow>
@@ -122,7 +145,7 @@ export default function ReservationTable({ items, visibleColumns, title }: Reser
             </CardContent>
             <CardFooter>
                 <div className="text-xs text-muted-foreground">
-                    Showing <strong>{items.length}</strong> items
+                    Showing <strong>{reservations.length}</strong> reservations
                 </div>
             </CardFooter>
         </Card>

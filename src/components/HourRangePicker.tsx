@@ -44,16 +44,27 @@ interface HourRangePickerProps {
 }
 
 export function HourRangePickerComponent({ currentHourRange, onHourRangeChange }: HourRangePickerProps) {
-  const [arrival, setArrival] = useState<number>(currentHourRange[0].getHours())
-  const [departure, setDeparture] = useState<number>(currentHourRange[1].getHours())
+  const [arrival, setArrival] = useState<number>(() => {
+    return currentHourRange[0] instanceof Date && !isNaN(currentHourRange[0].getTime())
+      ? currentHourRange[0].getHours()
+      : new Date().getHours()
+  })
+  const [departure, setDeparture] = useState<number>(() => {
+    return currentHourRange[1] instanceof Date && !isNaN(currentHourRange[1].getTime())
+      ? currentHourRange[1].getHours()
+      : new Date().getHours() + 1
+  })
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState<Step>('arrival')
   const [popoverWidth, setPopoverWidth] = useState<number>(0)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    setArrival(currentHourRange[0].getHours())
-    setDeparture(currentHourRange[1].getHours())
+    if (currentHourRange[0] instanceof Date && !isNaN(currentHourRange[0].getTime()) &&
+      currentHourRange[1] instanceof Date && !isNaN(currentHourRange[1].getTime())) {
+      setArrival(currentHourRange[0].getHours())
+      setDeparture(currentHourRange[1].getHours())
+    }
   }, [currentHourRange])
 
   useEffect(() => {

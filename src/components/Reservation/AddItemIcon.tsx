@@ -4,24 +4,20 @@ import { Button } from '@/components/ui/button';
 import { useReservation } from '@/contexts/ReservationProvider';
 import { DrawerTrigger } from '@/components/ui/drawer';
 
-export function AddItemIcon() {
-    const { addingItem, resetAddingItem } = useReservation();
+interface AddItemIconProps {
+    onClick: () => void;
+}
 
-    const handleClick = () => {
-        // Only reset if there's no existing data
-        if (!addingItem) {
-            resetAddingItem();
-        }
-    };
-
+export function AddItemIcon({ onClick }: AddItemIconProps) {
     return (
-        <DrawerTrigger asChild>
-            <Button
-                className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg"
-                onClick={handleClick}
-            >
-                <Plus className="w-6 h-6" />
-            </Button>
-        </DrawerTrigger>
+        <Button
+            variant="outline"
+            size="icon"
+            className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg"
+            onClick={onClick}
+        >
+            <Plus className="h-6 w-6" />
+            <span className="sr-only">Add new item</span>
+        </Button>
     );
 }

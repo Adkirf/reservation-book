@@ -1,38 +1,38 @@
-import { dbItem, Month, Months, Reservation, Task } from '@/lib/projectTypes';
+import { Month, Months, Reservation } from '@/lib/projectTypes';
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
-import { fetchItemsForMonth, addItem, updateItem } from '@/lib/firebase/firestore'; // Assume this function exists to update items in Firestore
+import { getReservations, addReservation, updateReservation as updateReservationInFirestore } from '@/lib/firebase/firestore';
+import { Drawer } from "@/components/ui/drawer";
+import { AddItemForm } from "@/components/Reservation/AddItemForm";
 
-export type FormData = {
-    type: "reservation" | "task";
+export type ReservationFormData = {
     name: string;
     dateStart: Date;
     dateEnd: Date;
     comment: string;
     numberOfPeople: number;
     contact: string[];
-    assignedTo: string;
-    reference: string;
+    // Remove reference field
 }
 
 // Define the shape of the reservation context
 export interface ReservationContextType {
-    items: dbItem[];
-    addingItem: FormData | null; // Changed from currentItem to addingItem
+    reservations: Reservation[];
+    addingReservation: ReservationFormData | null;
     currentMonth: Month;
     currentYear: number;
     isLoading: boolean;
     setCurrentMonth: (month: Month) => void;
     setCurrentYear: (year: number) => void;
-    setItems: React.Dispatch<React.SetStateAction<dbItem[]>>;
-    updateAddingItem: (field: keyof FormData, value: any) => void; // Changed from updateCurrentItem
-    resetAddingItem: () => void; // Changed from resetCurrentItem
-    refreshItems: () => Promise<void>;
-    addNewItem: (item: Omit<dbItem, 'id'>) => Promise<void>;
-    editingItem: dbItem | null;
-    setEditingItem: (item: dbItem | null) => void;
-    updateEditingItem: (field: keyof dbItem, value: any) => void;
-    saveEditingItem: () => Promise<void>;
+    setReservations: React.Dispatch<React.SetStateAction<Reservation[]>>;
+    updateAddingReservation: (field: keyof ReservationFormData, value: any) => void;
+    resetAddingReservation: () => void;
+    refreshReservations: () => Promise<void>;
+    addNewReservation: (reservation: Omit<Reservation, 'id'>) => Promise<void>;
+    editingReservation: Reservation | null;
+    setEditingReservation: (reservation: Reservation | null) => void;
+    updateEditingReservation: (field: keyof Reservation, value: any) => void;
+    updateReservation: (id: string, data: Partial<ReservationFormData>) => Promise<void>;
 }
 
 // Create a context for reservation data
@@ -59,41 +59,45 @@ interface ReservationProviderProps {
  * Wraps child components with ReservationContext.Provider
  */
 export const ReservationProvider: React.FC<ReservationProviderProps> = ({ children }) => {
-    const [items, setItems] = useState<dbItem[]>([]);
-    const [addingItem, setAddingItem] = useState<FormData | null>(null); // Changed from currentItem
+    const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [addingReservation, setAddingReservation] = useState<ReservationFormData | null>(null);
     const [currentMonth, setCurrentMonth] = useState<Month>(Months[new Date().getMonth()]);
     const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [editingItem, setEditingItem] = useState<dbItem | null>(null);
+    const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
 
     const { user } = useAuth();
 
-    const updateAddingItem = useCallback((field: keyof FormData, value: any) => {
-        setAddingItem((prev) => prev ? { ...prev, [field]: value } : null);
+    const updateAddingReservation = useCallback((field: keyof ReservationFormData, value: any) => {
+        setAddingReservation((prev) => prev ? { ...prev, [field]: value } : null);
     }, []);
 
-    const resetAddingItem = useCallback(() => {
-        setAddingItem({
-            type: "reservation",
+    const resetAddingReservation = useCallback(() => {
+        setAddingReservation({
             name: "",
             dateStart: new Date(),
             dateEnd: new Date(),
             comment: "",
             numberOfPeople: 1,
             contact: [],
-            assignedTo: "",
-            reference: "",
+            // Remove reference field
         });
     }, []);
 
-    const fetchItemsForCurrentMonth = useCallback(async () => {
+    const fetchReservationsForCurrentMonth = useCallback(async () => {
         setIsLoading(true);
         try {
-            const { reservations, tasks } = await fetchItemsForMonth(currentMonth, currentYear);
-            console.log('Fetched items:', { reservations, tasks });
-            setItems([...reservations, ...tasks]);
+            const fetchedReservations = await getReservations();
+            console.log('Fetched reservations:', fetchedReservations);
+            // Filter reservations for the current month and year
+            const filteredReservations = fetchedReservations.filter(reservation => {
+                const reservationDate = new Date(reservation.dateStart);
+                return reservationDate.getMonth() === Months.indexOf(currentMonth) &&
+                    reservationDate.getFullYear() === currentYear;
+            });
+            setReservations(filteredReservations);
         } catch (error) {
-            console.error('Error fetching items:', error);
+            console.error('Error fetching reservations:', error);
         } finally {
             setIsLoading(false);
         }
@@ -101,70 +105,103 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
 
     useEffect(() => {
         if (user) {
-            fetchItemsForCurrentMonth();
+            fetchReservationsForCurrentMonth();
         }
-    }, [user, currentMonth, currentYear, fetchItemsForCurrentMonth]);
+    }, [user, currentMonth, currentYear, fetchReservationsForCurrentMonth]);
 
-    const addNewItem = useCallback(async (newItem: Omit<dbItem, 'id'>) => {
+    const addNewReservation = useCallback(async (newReservation: Omit<Reservation, 'id'>) => {
         try {
-            const id = await addItem(newItem);
-            const itemWithId = { ...newItem, id };
-            setItems(prevItems => [...prevItems, itemWithId]);
+            const id = await addReservation(newReservation);
+            const reservationWithId = { ...newReservation, id };
+            setReservations(prevReservations => [...prevReservations, reservationWithId]);
 
-            // Check if the new item is in the current month and year
-            const itemDate = new Date(newItem.dateStart);
-            if (itemDate.getMonth() === Months.indexOf(currentMonth) && itemDate.getFullYear() === currentYear) {
-                await fetchItemsForCurrentMonth();
+            // Check if the new reservation is in the current month and year
+            const reservationDate = new Date(newReservation.dateStart);
+            if (reservationDate.getMonth() === Months.indexOf(currentMonth) && reservationDate.getFullYear() === currentYear) {
+                await fetchReservationsForCurrentMonth();
             }
 
-            resetAddingItem();
+            resetAddingReservation();
         } catch (error) {
-            console.error('Error adding new item:', error);
+            console.error('Error adding new reservation:', error);
             // Handle error (e.g., show an error message to the user)
         }
-    }, [currentMonth, currentYear, fetchItemsForCurrentMonth, resetAddingItem]);
+    }, [currentMonth, currentYear, fetchReservationsForCurrentMonth, resetAddingReservation]);
 
-    const updateEditingItem = useCallback((field: keyof dbItem, value: any) => {
-        setEditingItem((prev) => prev ? { ...prev, [field]: value } : null);
+    const updateEditingReservation = useCallback((field: keyof Reservation, value: any) => {
+        setEditingReservation((prev) => prev ? { ...prev, [field]: value } : null);
     }, []);
 
-    const saveEditingItem = useCallback(async () => {
-        if (editingItem) {
-            try {
-                await updateItem(editingItem);
-                setItems((prevItems) =>
-                    prevItems.map((item) => (item.id === editingItem.id ? editingItem : item))
-                );
-                setEditingItem(null);
-            } catch (error) {
-                console.error('Error updating item:', error);
-                // Handle error (e.g., show an error message to the user)
-            }
-        }
-    }, [editingItem]);
 
-    const contextValue: ReservationContextType = {
-        items,
-        addingItem, // Changed from currentItem
+    const updateReservation = useCallback(async (id: string, data: Partial<ReservationFormData>) => {
+        try {
+            await updateReservationInFirestore({ ...data as Reservation, id });
+            setReservations((prevReservations) =>
+                prevReservations.map((reservation) =>
+                    reservation.id === id ? { ...reservation, ...data } : reservation
+                )
+            );
+            // Refresh reservations if the updated reservation might be in the current month/year
+            const updatedDate = data.dateStart ? new Date(data.dateStart) : null;
+            if (updatedDate &&
+                updatedDate.getMonth() === Months.indexOf(currentMonth) &&
+                updatedDate.getFullYear() === currentYear) {
+                await fetchReservationsForCurrentMonth();
+            }
+        } catch (error) {
+            console.error('Error updating reservation:', error);
+            throw error; // Re-throw the error so it can be handled by the caller
+        }
+    }, [currentMonth, currentYear, fetchReservationsForCurrentMonth]);
+
+    const contextValue = React.useMemo(() => ({
+        reservations,
+        addingReservation,
         currentMonth,
         currentYear,
         isLoading,
         setCurrentMonth,
         setCurrentYear,
-        setItems,
-        updateAddingItem, // Changed from updateCurrentItem
-        resetAddingItem, // Changed from resetCurrentItem
-        refreshItems: fetchItemsForCurrentMonth,
-        addNewItem,
-        editingItem,
-        setEditingItem,
-        updateEditingItem,
-        saveEditingItem,
-    };
+        setReservations,
+        updateAddingReservation,
+        resetAddingReservation,
+        refreshReservations: fetchReservationsForCurrentMonth,
+        addNewReservation,
+        editingReservation,
+        setEditingReservation,
+        updateEditingReservation,
+        updateReservation,
+    }), [
+        reservations,
+        addingReservation,
+        currentMonth,
+        currentYear,
+        isLoading,
+        setCurrentMonth,
+        setCurrentYear,
+        setReservations,
+        updateAddingReservation,
+        resetAddingReservation,
+        fetchReservationsForCurrentMonth,
+        addNewReservation,
+        editingReservation,
+        setEditingReservation,
+        updateEditingReservation,
+        updateReservation,
+    ]);
 
     return (
         <ReservationContext.Provider value={contextValue}>
             {children}
+            <Drawer open={!!editingReservation} onOpenChange={(open) => !open && setEditingReservation(null)}>
+                {editingReservation && (
+                    <AddItemForm
+                        onClose={() => setEditingReservation(null)}
+                        initialData={editingReservation}
+                        isEditing={true}
+                    />
+                )}
+            </Drawer>
         </ReservationContext.Provider>
     );
 };

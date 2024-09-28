@@ -1,68 +1,45 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { dbItem } from '../lib/projectTypes';
-import { sortAndFilterDbItems } from "@/lib/utils";
+import { allColumns, defaultColumns, Reservation } from '../lib/projectTypes';
+import { sortAndFilterReservations } from "@/lib/utils";
+import { format } from 'date-fns';
 
-export const useReservationFilters = (initialItems: dbItem[]) => {
-    const [items, setItems] = useState<dbItem[]>(initialItems);
-    const [selectedTab, setSelectedTab] = useState<'All' | 'Reservations' | 'Tasks'>('All');
+export const useReservationFilters = (initialReservations: Reservation[]) => {
+    const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [deselectedColumns, setDeselectedColumns] = useState<string[]>([]);
-
-    const defaultColumns = useMemo(() => {
-        switch (selectedTab) {
-            case 'All':
-                return ['name', 'date'];
-            case 'Reservations':
-                return ['name', 'date', 'numberOfPeople'];
-            case 'Tasks':
-                return ['name', 'comment'];
-            default:
-                return ['name', 'date'];
-        }
-    }, [selectedTab]);
-
-    const allColumns = useMemo(() => {
-        switch (selectedTab) {
-            case 'All':
-                return ['name', 'date', 'comment'];
-            case 'Reservations':
-                return ['name', 'date', 'numberOfPeople', 'comment'];
-            case 'Tasks':
-                return ['name', 'date', 'comment'];
-            default:
-                return ['name', 'date', 'comment'];
-        }
-    }, [selectedTab]);
+    const [deselectedColumns, setDeselectedColumns] = useState<string[]>(() => {
+        return allColumns.filter(column => !defaultColumns.includes(column));
+    });
 
     const visibleColumns = useMemo(() => {
         return allColumns.filter(column => !deselectedColumns.includes(column));
-    }, [allColumns, deselectedColumns]);
+    }, [deselectedColumns]);
 
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'dateStart', direction: 'asc' });
 
     useEffect(() => {
         updateFilters();
-    }, [sortConfig, selectedTab, searchQuery, visibleColumns]);
+    }, [sortConfig, searchQuery, visibleColumns]);
 
-    const sortedItems = useMemo(() => {
-        return sortAndFilterDbItems(initialItems, {
-            tab: selectedTab,
+    const sortedReservations = useMemo(() => {
+        return sortAndFilterReservations(initialReservations, {
             searchQuery,
             visibleColumns,
             sortConfig,
-        });
-    }, [initialItems, selectedTab, searchQuery, visibleColumns, sortConfig]);
+        }).map(reservation => ({
+            ...reservation,
+            date: formatDateRange(reservation.dateStart, reservation.dateEnd)
+        }));
+    }, [initialReservations, searchQuery, visibleColumns, sortConfig]);
 
     const updateFilters = useCallback(() => {
-        const filteredItems = sortAndFilterDbItems(initialItems, {
-            tab: selectedTab,
+        const filteredReservations = sortAndFilterReservations(initialReservations, {
             searchQuery,
             visibleColumns,
             sortConfig,
         });
-        console.log('Filtered items:', filteredItems);
-        setItems(filteredItems);
-    }, [initialItems, selectedTab, searchQuery, visibleColumns, sortConfig]);
+        console.log('Filtered reservations:', filteredReservations);
+        setReservations(filteredReservations);
+    }, [initialReservations, searchQuery, visibleColumns, sortConfig]);
 
     const requestSort = (key: string) => {
         setSortConfig(prevConfig => ({
@@ -86,10 +63,8 @@ export const useReservationFilters = (initialItems: dbItem[]) => {
     };
 
     return {
-        sortedItems,  // Add this
-        items: sortedItems,  // Replace the old 'items' with sortedItems
-        selectedTab,
-        setSelectedTab,
+        sortedReservations,
+        reservations: sortedReservations,
         searchQuery,
         setSearchQuery,
         visibleColumns,
@@ -99,5 +74,12 @@ export const useReservationFilters = (initialItems: dbItem[]) => {
         updateFilters,
         sortConfig,
         requestSort,
+        formatDateRange, // Add this function to the returned object
     };
 };
+
+// Add this function outside of the hook
+function formatDateRange(dateStart: Date, dateEnd: Date): string {
+    if (!dateStart || !dateEnd) return '';
+    return `${format(dateStart, 'dd')} - ${format(dateEnd, 'dd.MM')}`;
+}

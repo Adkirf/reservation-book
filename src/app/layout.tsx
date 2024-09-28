@@ -46,6 +46,17 @@ export default function RootLayout({
     setIsFormOpen(false);
   };
 
+  // Add state for managing the drawer visibility
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleOpenDrawer = () => {
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+  };
+
   return (
     <html lang="en" className="h-full">
       <body
@@ -78,9 +89,9 @@ export default function RootLayout({
                     </main>
 
                     {/* Add the AddItemIcon component */}
-                    <Drawer>
-                      <AddItemIcon />
-                      <AddItemForm onClose={handleCloseForm} />
+                    <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                      <AddItemIcon onClick={handleOpenDrawer} />
+                      <AddItemForm onClose={handleCloseDrawer} />
                     </Drawer>
                   </div>
                 </div>

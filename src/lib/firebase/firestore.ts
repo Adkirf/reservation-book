@@ -1,7 +1,7 @@
 import { getDoc, initializeFirestore, persistentLocalCache, persistentSingleTabManager } from 'firebase/firestore';
 import { app } from './config'; // Assuming you have a Firebase app instance
 import { collection, addDoc, updateDoc, deleteDoc, doc, setDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
-import { dbItem, Month, Reservation, Task, AppUser, UserRole } from '../projectTypes';
+import { Month, Reservation, AppUser, UserRole } from '../projectTypes';
 
 // Initialize Firestore with persistent cache
 export const db = initializeFirestore(app, {
@@ -70,14 +70,18 @@ export const addReservation = async (reservation: Omit<Reservation, 'id'>): Prom
 
 /**
  * Updates an existing reservation in the Firestore database
- * @param id - The ID of the reservation to update
- * @param reservationData - The updated reservation data
+ * @param reservation - The updated reservation data, including the id
  * @throws Error if the operation fails
  */
-export const updateReservation = async (id: string, reservationData: any) => {
+export const updateReservation = async (reservation: Reservation) => {
     try {
+        const { id, ...reservationData } = reservation;
         const reservationRef = doc(db, 'reservations', id);
-        await updateDoc(reservationRef, reservationData);
+        await updateDoc(reservationRef, {
+            ...reservationData,
+            dateStart: Timestamp.fromDate(reservationData.dateStart),
+            dateEnd: Timestamp.fromDate(reservationData.dateEnd),
+        });
     } catch (error) {
         console.error('Error updating reservation:', error);
         throw error; // Re-throw for handling in the UI layer
@@ -99,67 +103,35 @@ export const deleteReservation = async (id: string) => {
     }
 };
 
-export const convertFirestoreTimestamps = (item: any): dbItem => ({
-    ...item,
-    dateStart: item.dateStart instanceof Timestamp ? item.dateStart.toDate() : item.dateStart,
-    dateEnd: item.dateEnd instanceof Timestamp ? item.dateEnd.toDate() : item.dateEnd,
-});
 
-export const fetchItemsForMonth = async (month: Month, year: number): Promise<{ reservations: Reservation[], tasks: Task[] }> => {
-    const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
-    const startOfMonth = new Date(year, monthIndex, 1);
-    const endOfMonth = new Date(year, monthIndex + 1, 0, 23, 59, 59);
 
-    console.log('Fetching items for:', { month, year, startOfMonth, endOfMonth });
-
-    const itemsQuery = query(
-        collection(db, 'items'),
-        where('dateStart', '>=', Timestamp.fromDate(startOfMonth)),
-        where('dateStart', '<=', Timestamp.fromDate(endOfMonth))
-    );
-
+/**
+ * Fetches all reservations from the Firestore database
+ * @returns An array of Reservation objects
+ * @throws Error if the operation fails
+ */
+export const getReservations = async (): Promise<Reservation[]> => {
     try {
-        const itemsSnapshot = await getDocs(itemsQuery);
-
-        console.log('Query returned:', itemsSnapshot.size, 'documents');
+        const reservationsQuery = query(collection(db, 'reservations'));
+        const reservationsSnapshot = await getDocs(reservationsQuery);
 
         const reservations: Reservation[] = [];
-        const tasks: Task[] = [];
-
-        itemsSnapshot.forEach((doc) => {
-            console.log('Document data:', doc.data());
-            const data = convertFirestoreTimestamps(doc.data() as dbItem);
-            if ('numberOfPeople' in data) {
-                reservations.push(data as Reservation);
-            } else if ('assignedTo' in data) {
-                tasks.push(data as Task);
-            }
+        reservationsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            reservations.push({
+                id: doc.id,
+                ...data,
+                dateStart: data.dateStart.toDate(),
+                dateEnd: data.dateEnd.toDate(),
+            } as Reservation);
         });
 
-        console.log('Processed items:', { reservations, tasks });
-
-        return { reservations, tasks };
+        console.log('Fetched reservations:', reservations);
+        return reservations;
     } catch (error) {
-        console.error('Error fetching items:', error);
+        console.error('Error fetching reservations:', error);
         throw error;
     }
 };
 
-export const addItem = async (item: Omit<dbItem, 'id'>): Promise<string> => {
-    try {
-        const docRef = await addDoc(collection(db, 'items'), {
-            ...item,
-            dateStart: Timestamp.fromDate(item.dateStart),
-            dateEnd: Timestamp.fromDate(item.dateEnd),
-        });
-        return docRef.id;
-    } catch (error) {
-        console.error('Error adding item:', error);
-        throw error;
-    }
-};
-
-export const updateItem = async (item: Partial<dbItem>) => {
-
-};
 

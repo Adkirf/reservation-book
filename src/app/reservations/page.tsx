@@ -4,60 +4,47 @@ import { useState, useEffect } from 'react';
 import { useReservation } from '@/contexts/ReservationProvider';
 import { useReservationFilters } from '@/hooks/useReservationFilter';
 import ReservationList from '@/components/Reservation/ReservationList';
-import { Months } from '@/lib/projectTypes';
-import MonthSelect from '@/components/MonthSelect';
+import { Months, allColumns, defaultColumns } from '@/lib/projectTypes';
 
 export default function ReservationsPage() {
-    const { items, isLoading, currentMonth, setCurrentMonth } = useReservation();
+    const { reservations, isLoading, currentMonth, setCurrentMonth } = useReservation();
 
     const {
-        items: filteredItems,
-        selectedTab,
-        setSelectedTab,
+        sortedReservations,
         searchQuery,
         setSearchQuery,
         visibleColumns,
-        allColumns,
-        defaultColumns,
         toggleColumn,
         updateFilters
-    } = useReservationFilters(items);
+    } = useReservationFilters(reservations);
 
-    console.log('Reservations page re-rendered, items:', filteredItems);
+    console.log('Reservations page re-rendered, reservations:', sortedReservations);
 
     useEffect(() => {
         updateFilters();
-    }, [items, updateFilters]);
-
-
+    }, [reservations, updateFilters]);
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-4">Reservations</h1>
+        <div className="w-full max-w-full overflow-x-hidden">
+            <div className="px-4 py-8">
+                <h1 className="text-2xl font-bold mb-4">Reservations</h1>
 
-            {/* Month selector component */}
-            <div className="mb-4">
-                <MonthSelect />
+                {/* Conditional rendering based on loading state */}
+                {isLoading ? (
+                    <p>Loading reservations...</p>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <ReservationList
+                            reservations={sortedReservations}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            visibleColumns={visibleColumns}
+
+                            toggleColumn={toggleColumn}
+                        />
+                    </div>
+                )}
             </div>
-
-            {/* Conditional rendering based on loading state */}
-            {isLoading ? (
-                <p>Loading reservations...</p>
-            ) : (
-                <div>
-                    <ReservationList
-                        items={filteredItems}
-                        selectedTab={selectedTab}
-                        setSelectedTab={setSelectedTab}
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        visibleColumns={visibleColumns}
-                        allColumns={allColumns}
-                        defaultColumns={defaultColumns}
-                        toggleColumn={toggleColumn}
-                    />
-                </div>
-            )}
         </div>
     );
 }

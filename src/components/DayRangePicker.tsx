@@ -25,13 +25,13 @@ export default function DateRangePicker({
     onDateRangeChange,
 }: DateRangePickerProps) {
     const [date, setDate] = React.useState<DateRange | undefined>(
-        currentDateRange
+        currentDateRange && isValidDateRange(currentDateRange)
             ? { from: currentDateRange[0], to: currentDateRange[1] }
             : undefined
     )
 
     React.useEffect(() => {
-        if (currentDateRange) {
+        if (currentDateRange && isValidDateRange(currentDateRange)) {
             setDate({ from: currentDateRange[0], to: currentDateRange[1] })
         }
     }, [currentDateRange])
@@ -39,6 +39,13 @@ export default function DateRangePicker({
     const handleDateSelect = (newDate: DateRange | undefined) => {
         setDate(newDate)
         onDateRangeChange?.(newDate)
+    }
+
+    const formatDate = (date: Date | undefined) => {
+        if (!date || isNaN(date.getTime())) {
+            return "Pick a date"
+        }
+        return format(date, "LLL dd, y")
     }
 
     return (
@@ -57,11 +64,10 @@ export default function DateRangePicker({
                         {date?.from ? (
                             date.to ? (
                                 <>
-                                    {format(date.from, "LLL dd, y")} -{" "}
-                                    {format(date.to, "LLL dd, y")}
+                                    {formatDate(date.from)} - {formatDate(date.to)}
                                 </>
                             ) : (
-                                format(date.from, "LLL dd, y")
+                                formatDate(date.from)
                             )
                         ) : (
                             <span>Pick a date range</span>
@@ -81,4 +87,8 @@ export default function DateRangePicker({
             </Popover>
         </div>
     )
+}
+
+function isValidDateRange(dateRange: [Date, Date]): boolean {
+    return dateRange.every(date => date instanceof Date && !isNaN(date.getTime()))
 }
