@@ -1,38 +1,28 @@
-import { Month, Months, Reservation } from '@/lib/projectTypes';
+import { Reservation, Month, Months } from '@/lib/projectTypes';
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
 import { getReservations, addReservation, updateReservation as updateReservationInFirestore } from '@/lib/firebase/firestore';
 import { Drawer } from "@/components/ui/drawer";
 import { AddItemForm } from "@/components/Reservation/AddItemForm";
 
-export type ReservationFormData = {
-    name: string;
-    dateStart: Date;
-    dateEnd: Date;
-    comment: string;
-    numberOfPeople: number;
-    contact: string[];
-    // Remove reference field
-}
+export type EditingReservation = Partial<Reservation> | null;
 
 // Define the shape of the reservation context
 export interface ReservationContextType {
     reservations: Reservation[];
-    addingReservation: ReservationFormData | null;
-    currentMonth: Month;
-    currentYear: number;
+    editingReservation: EditingReservation;
     isLoading: boolean;
-    setCurrentMonth: (month: Month) => void;
-    setCurrentYear: (year: number) => void;
+    isDrawerOpen: boolean;
     setReservations: React.Dispatch<React.SetStateAction<Reservation[]>>;
-    updateAddingReservation: (field: keyof ReservationFormData, value: any) => void;
-    resetAddingReservation: () => void;
-    refreshReservations: () => Promise<void>;
+    setEditingReservation: (reservation: EditingReservation) => void;
+    updateEditingReservation: (updateFields: Partial<Reservation>) => void;
     addNewReservation: (reservation: Omit<Reservation, 'id'>) => Promise<void>;
-    editingReservation: Reservation | null;
-    setEditingReservation: (reservation: Reservation | null) => void;
-    updateEditingReservation: (field: keyof Reservation, value: any) => void;
-    updateReservation: (id: string, data: Partial<ReservationFormData>) => Promise<void>;
+    updateReservation: (id: string, data: Partial<Reservation>) => Promise<void>;
+    handleOpenDrawer: () => void;
+    handleCloseDrawer: () => void;
+    resetEditingReservation: () => void; // Add this new function
+    fetchAllReservations: () => Promise<void>;
+    getReservationsByMonth: (month: Month, year: number) => Reservation[];
 }
 
 // Create a context for reservation data
@@ -60,145 +50,134 @@ interface ReservationProviderProps {
  */
 export const ReservationProvider: React.FC<ReservationProviderProps> = ({ children }) => {
     const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [addingReservation, setAddingReservation] = useState<ReservationFormData | null>(null);
-    const [currentMonth, setCurrentMonth] = useState<Month>(Months[new Date().getMonth()]);
-    const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
+    const [editingReservation, setEditingReservation] = useState<EditingReservation>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
     const { user } = useAuth();
 
-    const updateAddingReservation = useCallback((field: keyof ReservationFormData, value: any) => {
-        setAddingReservation((prev) => prev ? { ...prev, [field]: value } : null);
+    const updateEditingReservation = useCallback((updateFields: Partial<Reservation>) => {
+        setEditingReservation((prev) => {
+            if (prev) {
+                return { ...prev, ...updateFields };
+            }
+            console.log("null update")
+            return updateFields;
+        });
     }, []);
 
-    const resetAddingReservation = useCallback(() => {
-        setAddingReservation({
+    const resetEditingReservation = useCallback(() => {
+        setEditingReservation({
             name: "",
             dateStart: new Date(),
             dateEnd: new Date(),
             comment: "",
             numberOfPeople: 1,
             contact: [],
-            // Remove reference field
         });
     }, []);
 
-    const fetchReservationsForCurrentMonth = useCallback(async () => {
+    const fetchAllReservations = useCallback(async () => {
         setIsLoading(true);
         try {
             const fetchedReservations = await getReservations();
-            console.log('Fetched reservations:', fetchedReservations);
-            // Filter reservations for the current month and year
-            const filteredReservations = fetchedReservations.filter(reservation => {
-                const reservationDate = new Date(reservation.dateStart);
-                return reservationDate.getMonth() === Months.indexOf(currentMonth) &&
-                    reservationDate.getFullYear() === currentYear;
-            });
-            setReservations(filteredReservations);
+            setReservations(fetchedReservations);
         } catch (error) {
             console.error('Error fetching reservations:', error);
         } finally {
             setIsLoading(false);
         }
-    }, [currentMonth, currentYear]);
+    }, []);
 
     useEffect(() => {
         if (user) {
-            fetchReservationsForCurrentMonth();
+            fetchAllReservations();
         }
-    }, [user, currentMonth, currentYear, fetchReservationsForCurrentMonth]);
+    }, [user, fetchAllReservations]);
 
     const addNewReservation = useCallback(async (newReservation: Omit<Reservation, 'id'>) => {
         try {
             const id = await addReservation(newReservation);
             const reservationWithId = { ...newReservation, id };
             setReservations(prevReservations => [...prevReservations, reservationWithId]);
-
-            // Check if the new reservation is in the current month and year
-            const reservationDate = new Date(newReservation.dateStart);
-            if (reservationDate.getMonth() === Months.indexOf(currentMonth) && reservationDate.getFullYear() === currentYear) {
-                await fetchReservationsForCurrentMonth();
-            }
-
-            resetAddingReservation();
+            resetEditingReservation();
         } catch (error) {
             console.error('Error adding new reservation:', error);
-            // Handle error (e.g., show an error message to the user)
         }
-    }, [currentMonth, currentYear, fetchReservationsForCurrentMonth, resetAddingReservation]);
+    }, [resetEditingReservation]);
 
-    const updateEditingReservation = useCallback((field: keyof Reservation, value: any) => {
-        setEditingReservation((prev) => prev ? { ...prev, [field]: value } : null);
-    }, []);
-
-
-    const updateReservation = useCallback(async (id: string, data: Partial<ReservationFormData>) => {
+    const updateReservation = useCallback(async (id: string, data: Partial<Reservation>) => {
         try {
-            await updateReservationInFirestore({ ...data as Reservation, id });
+            const reservationToUpdate = { id, ...data } as Reservation;
+            await updateReservationInFirestore(reservationToUpdate);
             setReservations((prevReservations) =>
                 prevReservations.map((reservation) =>
                     reservation.id === id ? { ...reservation, ...data } : reservation
                 )
             );
-            // Refresh reservations if the updated reservation might be in the current month/year
-            const updatedDate = data.dateStart ? new Date(data.dateStart) : null;
-            if (updatedDate &&
-                updatedDate.getMonth() === Months.indexOf(currentMonth) &&
-                updatedDate.getFullYear() === currentYear) {
-                await fetchReservationsForCurrentMonth();
-            }
         } catch (error) {
             console.error('Error updating reservation:', error);
-            throw error; // Re-throw the error so it can be handled by the caller
+            throw error;
         }
-    }, [currentMonth, currentYear, fetchReservationsForCurrentMonth]);
+    }, []);
+
+    const handleOpenDrawer = useCallback(() => {
+        console.log("Opening drawer");
+        setIsDrawerOpen(true);
+    }, []);
+
+    const handleCloseDrawer = useCallback(() => {
+        setIsDrawerOpen(false);
+        // Don't reset editingReservation here
+    }, []);
+
+    const getReservationsByMonth = useCallback((month: Month, year: number) => {
+        const monthIndex = Months.indexOf(month);
+        return reservations.filter(reservation => {
+            const reservationDate = new Date(reservation.dateStart);
+            return reservationDate.getMonth() === monthIndex && reservationDate.getFullYear() === year;
+        });
+    }, [reservations]);
 
     const contextValue = React.useMemo(() => ({
         reservations,
-        addingReservation,
-        currentMonth,
-        currentYear,
-        isLoading,
-        setCurrentMonth,
-        setCurrentYear,
-        setReservations,
-        updateAddingReservation,
-        resetAddingReservation,
-        refreshReservations: fetchReservationsForCurrentMonth,
-        addNewReservation,
         editingReservation,
+        isLoading,
+        isDrawerOpen,
+        setReservations,
         setEditingReservation,
         updateEditingReservation,
+        fetchAllReservations,
+        addNewReservation,
         updateReservation,
+        handleOpenDrawer,
+        handleCloseDrawer,
+        resetEditingReservation,
+        getReservationsByMonth,
     }), [
         reservations,
-        addingReservation,
-        currentMonth,
-        currentYear,
-        isLoading,
-        setCurrentMonth,
-        setCurrentYear,
-        setReservations,
-        updateAddingReservation,
-        resetAddingReservation,
-        fetchReservationsForCurrentMonth,
-        addNewReservation,
         editingReservation,
+        isLoading,
+        isDrawerOpen,
+        setReservations,
         setEditingReservation,
         updateEditingReservation,
+        fetchAllReservations,
+        addNewReservation,
         updateReservation,
+        handleOpenDrawer,
+        handleCloseDrawer,
+        resetEditingReservation,
+        getReservationsByMonth,
     ]);
 
     return (
         <ReservationContext.Provider value={contextValue}>
             {children}
-            <Drawer open={!!editingReservation} onOpenChange={(open) => !open && setEditingReservation(null)}>
-                {editingReservation && (
+            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                {isDrawerOpen && (
                     <AddItemForm
-                        onClose={() => setEditingReservation(null)}
-                        initialData={editingReservation}
-                        isEditing={true}
+                        onClose={handleCloseDrawer}
                     />
                 )}
             </Drawer>

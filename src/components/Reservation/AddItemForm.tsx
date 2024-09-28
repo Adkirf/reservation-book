@@ -1,30 +1,41 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { X, ChevronLeft, ChevronRight, Calendar, Clock, User, FileText, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { useReservation, ReservationFormData } from "@/contexts/ReservationProvider"
+import { useReservation } from "@/contexts/ReservationProvider"
 import { Reservation } from "@/lib/projectTypes"
-import { DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer"
-import { HourRangePickerComponent } from "@/components/HourRangePicker"
-import DateRangePicker from "@/components/DayRangePicker"
+import { DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer"
+import { HourRangePickerComponent } from "@/components/FormInputs/HourRangePicker"
+import DateRangePicker from "@/components/FormInputs/DayRangePicker"
 import { DateRange } from "react-day-picker"
+import { NumberInput } from "@/components/FormInputs/NumberInput"
 
 interface AddItemFormProps {
   onClose: () => void;
-  initialData?: Reservation;
-  isEditing?: boolean;
 }
 
-export function AddItemForm({ onClose, initialData, isEditing = false }: AddItemFormProps) {
-  const { addNewReservation, updateReservation } = useReservation()
+export function AddItemForm({ onClose }: AddItemFormProps) {
+  const {
+    editingReservation,
+    addNewReservation,
+    updateReservation,
+    updateEditingReservation,
+    resetEditingReservation // Add this
+  } = useReservation()
+
+  useEffect(() => {
+    if (!editingReservation) {
+      resetEditingReservation();
+    }
+  }, [editingReservation, resetEditingReservation]);
+
   const [page, setPage] = useState(0)
-  const [formData, setFormData] = useState<ReservationFormData | null>(null)
-  const [validity, setValidity] = useState<Record<keyof ReservationFormData, "valid" | "invalid" | "empty">>({
+  const [validity, setValidity] = useState<Record<keyof Reservation, "valid" | "invalid" | "empty">>({
+    id: "valid",
     name: "empty",
     dateStart: "empty",
     dateEnd: "empty",
@@ -32,36 +43,36 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
     numberOfPeople: "valid",
     contact: "empty",
   })
-  const [changedFields, setChangedFields] = useState<Set<keyof ReservationFormData>>(new Set())
+  const [changedFields, setChangedFields] = useState<Set<keyof Reservation>>(new Set())
+  const [hasChanges, setHasChanges] = useState(false)
+
+  const isEditing = !!editingReservation?.id
 
   useEffect(() => {
-    if (initialData) {
-      setFormData(initialData as ReservationFormData)
-    } else {
-      setFormData({
-        name: "",
-        dateStart: new Date(),
-        dateEnd: new Date(),
-        comment: "",
-        numberOfPeople: 1,
-        contact: [],
+    if (editingReservation) {
+      const newValidity: Record<keyof Reservation, "valid" | "invalid" | "empty"> = {} as Record<keyof Reservation, "valid" | "invalid" | "empty">
+      Object.keys(editingReservation).forEach((key) => {
+        const typedKey = key as keyof Reservation
+        newValidity[typedKey] = validateField(typedKey, editingReservation[typedKey])
       })
+      setValidity(newValidity)
     }
-  }, [initialData])
+  }, [editingReservation])
 
-  const validateField = (field: keyof ReservationFormData, value: any): "valid" | "invalid" | "empty" => {
-    console.log(formData)
+  useEffect(() => {
+    setHasChanges(changedFields.size > 0)
+  }, [changedFields])
+
+  const validateField = (field: keyof Reservation, value: any): "valid" | "invalid" | "empty" => {
     if (value === "" || value === null) return "empty"
     switch (field) {
       case "name":
         return (value as string).length >= 3 ? "valid" : "invalid"
       case "dateStart":
-        return value instanceof Date && !isNaN(value.getTime()) ? "valid" : "invalid"
       case "dateEnd":
         return value instanceof Date && !isNaN(value.getTime()) ? "valid" : "invalid"
       case "numberOfPeople":
         return typeof value === 'number' && value > 0 ? "valid" : "invalid"
-      // Optional fields are always considered valid
       case "comment":
       case "contact":
         return "valid"
@@ -70,30 +81,18 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
     }
   }
 
-  useEffect(() => {
-    if (formData) {
-      const newValidity: Record<keyof ReservationFormData, "valid" | "invalid" | "empty"> = {} as Record<keyof ReservationFormData, "valid" | "invalid" | "empty">
-      Object.keys(formData).forEach((key) => {
-        const typedKey = key as keyof ReservationFormData
-        newValidity[typedKey] = validateField(typedKey, formData[typedKey])
-      })
-      setValidity(newValidity)
-    }
-  }, [formData])
-
   const handleSubmit = async () => {
-    const requiredFields: (keyof ReservationFormData)[] = ['name', 'dateStart', 'dateEnd', 'numberOfPeople']
+    const requiredFields: (keyof Reservation)[] = ['name', 'dateStart', 'dateEnd', 'numberOfPeople']
 
-    if (requiredFields.every((field) => validity[field] === "valid") && formData) {
+    if (requiredFields.every((field) => validity[field] === "valid") && editingReservation) {
       try {
-        if (initialData?.id) {
-          // Editing existing reservation
-          await updateReservation(initialData.id, formData);
+        if (isEditing) {
+          await updateReservation(editingReservation.id!, editingReservation);
         } else {
-          // Adding new reservation
-          await addNewReservation(formData as Omit<Reservation, 'id'>);
+          await addNewReservation(editingReservation as Omit<Reservation, 'id'>);
         }
-        setPage(0)
+        resetEditingReservation(); // Reset the form after successful submission
+        setPage(0);
         onClose();
       } catch (error) {
         console.error('Error submitting reservation:', error);
@@ -104,31 +103,24 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
     }
   }
 
-  const updateField = (field: keyof ReservationFormData, value: any) => {
-    setFormData(prev => {
-      if (prev) {
-        const newData = { ...prev, [field]: value }
+  const updateField = (field: keyof Reservation, value: any) => {
+    updateEditingReservation({ [field]: value });
 
-        // Check if the new value is different from the initial value
-        if (isEditing && initialData && JSON.stringify(initialData[field]) !== JSON.stringify(value)) {
-          setChangedFields(prev => new Set(prev).add(field))
-        } else {
-          setChangedFields(prev => {
-            const newSet = new Set(prev)
-            newSet.delete(field)
-            return newSet
-          })
-        }
-
-        // Validate the updated field
-        const newValidity = { ...validity }
-        newValidity[field] = validateField(field, value)
-        setValidity(newValidity)
-
-        return newData
+    if (isEditing) {
+      if (JSON.stringify(editingReservation?.[field]) !== JSON.stringify(value)) {
+        setChangedFields(prev => new Set(prev).add(field))
+      } else {
+        setChangedFields(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(field)
+          return newSet
+        })
       }
-      return null
-    })
+    }
+
+    const newValidity = { ...validity }
+    newValidity[field] = validateField(field, value)
+    setValidity(newValidity)
   }
 
   const handleDateRangeChange = (dateRange: DateRange | undefined) => {
@@ -141,53 +133,16 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
   const handleHourRangeChange = (hourRange: [Date, Date]) => {
     const [newStart, newEnd] = hourRange
 
-    setFormData(prev => {
-      if (prev) {
-        const updatedStart = new Date(prev.dateStart)
-        updatedStart.setHours(newStart.getHours(), newStart.getMinutes(), 0, 0)
+    if (editingReservation) {
+      const updatedStart = new Date(editingReservation.dateStart || new Date())
+      updatedStart.setHours(newStart.getHours(), newStart.getMinutes(), 0, 0)
 
-        const updatedEnd = new Date(prev.dateEnd)
-        updatedEnd.setHours(newEnd.getHours(), newEnd.getMinutes(), 0, 0)
+      const updatedEnd = new Date(editingReservation.dateEnd || new Date())
+      updatedEnd.setHours(newEnd.getHours(), newEnd.getMinutes(), 0, 0)
 
-        const newData = {
-          ...prev,
-          dateStart: updatedStart,
-          dateEnd: updatedEnd
-        }
-
-        // Validate the updated fields
-        const newValidity = { ...validity }
-        newValidity.dateStart = validateField('dateStart', updatedStart)
-        newValidity.dateEnd = validateField('dateEnd', updatedEnd)
-        setValidity(newValidity)
-
-        // Update changed fields
-        if (isEditing && initialData) {
-          if (initialData.dateStart.getTime() !== updatedStart.getTime()) {
-            setChangedFields(prev => new Set(prev).add('dateStart'))
-          }
-          if (initialData.dateEnd.getTime() !== updatedEnd.getTime()) {
-            setChangedFields(prev => new Set(prev).add('dateEnd'))
-          }
-        }
-
-        return newData
-      }
-      return prev
-    })
-  }
-
-  const getInitialHourRange = (): [Date, Date] => {
-    const now = new Date()
-    const later = new Date(now)
-    later.setHours(later.getHours() + 1)
-
-    if (formData?.dateStart instanceof Date && !isNaN(formData.dateStart.getTime()) &&
-      formData?.dateEnd instanceof Date && !isNaN(formData.dateEnd.getTime())) {
-      return [formData.dateStart, formData.dateEnd]
+      updateField("dateStart", updatedStart)
+      updateField("dateEnd", updatedEnd)
     }
-
-    return [now, later]
   }
 
   const pages = [
@@ -201,7 +156,7 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
-              value={formData?.name || ""}
+              value={editingReservation?.name || ""}
               onChange={(e) => updateField("name", e.target.value)}
               placeholder="Enter reservation name"
             />
@@ -210,7 +165,7 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
             <Label htmlFor="comment">Comment (Optional)</Label>
             <Textarea
               id="comment"
-              value={formData?.comment || ""}
+              value={editingReservation?.comment || ""}
               onChange={(e) => updateField("comment", e.target.value)}
               placeholder="Enter reservation details"
             />
@@ -227,14 +182,14 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
           <div>
             <Label>Date Range</Label>
             <DateRangePicker
-              currentDateRange={formData ? [formData.dateStart, formData.dateEnd] : undefined}
+              currentDateRange={editingReservation && editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : undefined}
               onDateRangeChange={handleDateRangeChange}
             />
           </div>
           <div>
             <Label>Time Range</Label>
             <HourRangePickerComponent
-              currentHourRange={formData ? [formData.dateStart, formData.dateEnd] : [new Date(), new Date()]}
+              currentHourRange={editingReservation && editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date()]}
               onHourRangeChange={handleHourRangeChange}
             />
           </div>
@@ -249,24 +204,20 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
         <div className="space-y-4">
           <div>
             <Label htmlFor="numberOfPeople">Number of People</Label>
-            <Input
-              id="numberOfPeople"
-              type="number"
-              value={formData?.numberOfPeople || 1}
-              onChange={(e) => updateField("numberOfPeople", parseInt(e.target.value))}
-              placeholder="Enter number of people"
+            <NumberInput
+              currentNumber={editingReservation?.numberOfPeople || 1}
+              onNumberChange={(value) => updateField("numberOfPeople", value)}
             />
           </div>
           <div>
             <Label htmlFor="contact">Contact (Optional)</Label>
             <Input
               id="contact"
-              value={formData?.contact?.join(', ') || ''}
+              value={editingReservation?.contact?.join(', ') || ''}
               onChange={(e) => updateField("contact", e.target.value.split(',').map(s => s.trim()))}
               placeholder="Enter contact information (comma-separated)"
             />
           </div>
-          {/* Remove the reference input field */}
         </div>
       ),
     },
@@ -280,16 +231,14 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
       if (field === "comment" || field === "contact") {
         return "valid"
       }
-      console.log(field)
-      console.log(validity[field as keyof ReservationFormData])
-      return validity[field as keyof ReservationFormData]
+      return validity[field as keyof Reservation]
     })
 
     if (pageValidity.every((v) => v === "valid")) {
       // Check if any field on this page has changed
-      const hasChangedField = pageFields.some(field => changedFields.has(field as keyof ReservationFormData))
-      if (isEditing && hasChangedField) {
-        return "bg-yellow-500"
+      const hasChangedField = pageFields.some(field => changedFields.has(field as keyof Reservation))
+      if (isEditing) {
+        return hasChangedField ? "bg-yellow-500" : "bg-gray-300"
       }
       return "bg-green-500"
     }
@@ -299,11 +248,11 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
   return (
     <DrawerContent>
       <DrawerHeader>
-        <DrawerTitle>{initialData?.id ? "Edit Reservation" : "Add New Reservation"}</DrawerTitle>
+        <DrawerTitle>{isEditing ? "Edit Reservation" : "Add New Reservation"}</DrawerTitle>
         <DrawerDescription>{pages[page].title}</DrawerDescription>
       </DrawerHeader>
       <div className="p-4 pb-0">
-        {formData && pages[page].content}
+        {editingReservation && pages[page].content}
       </div>
       <DrawerFooter className="flex justify-between items-center">
         <div className="flex space-x-2">
@@ -325,7 +274,9 @@ export function AddItemForm({ onClose, initialData, isEditing = false }: AddItem
             <span className="sr-only">Previous page</span>
           </Button>
           {page === pages.length - 1 ? (
-            <Button onClick={handleSubmit}>Submit</Button>
+            <Button onClick={handleSubmit} disabled={isEditing && !hasChanges}>
+              Submit
+            </Button>
           ) : (
             <Button
               variant="outline"

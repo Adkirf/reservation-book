@@ -3,8 +3,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import { useReservation } from '@/contexts/ReservationProvider';
+import { Month, Months } from '@/lib/projectTypes';
 
 export function MobileCalendar() {
+  const { reservations, updateEditingReservation, handleOpenDrawer, editingReservation, getReservationsByMonth } = useReservation();
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [isSelecting, setIsSelecting] = useState(false)
@@ -36,10 +39,14 @@ export function MobileCalendar() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
     setSelectedDays([])
   }
-
   const handleDayInteractionStart = (day: number) => {
-    setIsSelecting(true)
-    setSelectedDays([day])
+    setIsSelecting(true);
+    setSelectedDays([day]);
+    const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    updateEditingReservation({
+      dateStart: selectedDate,
+      dateEnd: selectedDate,
+    });
   }
 
   const handleDayInteractionMove = (day: number) => {
@@ -53,14 +60,82 @@ export function MobileCalendar() {
         for (let i = lastSelected + step; i !== day + step; i += step) {
           if (!newSelection.includes(i)) newSelection.push(i)
         }
-        return newSelection.sort((a, b) => a - b)
+        const sortedSelection = newSelection.sort((a, b) => a - b)
+
+        // Create Date objects for the selected range
+        const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), sortedSelection[0]);
+        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), sortedSelection[sortedSelection.length - 1]);
+        console.log("startDate", startDate);
+        console.log("endDate", endDate);
+        // Update the reservation context
+        updateEditingReservation({
+          dateStart: startDate,
+          dateEnd: endDate,
+        });
+
+        return sortedSelection
       })
     }
   }
 
   const handleDayInteractionEnd = () => {
-    setIsSelecting(false)
+    setIsSelecting(false);
+    if (selectedDays.length > 0) {
+      console.log("Selected days:", selectedDays);
+      handleOpenDrawer(); // Open the drawer when selection ends
+    }
   }
+
+  const isFirstSelected = (day: number) => selectedDays[0] === day
+  const isLastSelected = (day: number) => selectedDays[selectedDays.length - 1] === day
+
+  // New function to check if a day has a reservation
+  const currentMonth = Months[currentDate.getMonth()] as Month;
+  const currentYear = currentDate.getFullYear();
+  const currentMonthReservations = getReservationsByMonth(currentMonth, currentYear);
+
+
+  const isReservationStart = (day: number) => {
+    return currentMonthReservations.some(reservation => {
+      const startDate = new Date(reservation.dateStart);
+      return startDate.getDate() === day && startDate.getMonth() === currentDate.getMonth();
+    });
+  }
+
+  const isReservationEnd = (day: number) => {
+    return currentMonthReservations.some(reservation => {
+      const endDate = new Date(reservation.dateEnd);
+      return endDate.getDate() === day && endDate.getMonth() === currentDate.getMonth();
+    });
+  }
+
+  const isWithinReservation = (day: number) => {
+    return currentMonthReservations.some(reservation => {
+      const startDate = new Date(reservation.dateStart);
+      const endDate = new Date(reservation.dateEnd);
+      const checkDate = new Date(currentYear, currentDate.getMonth(), day);
+      return checkDate >= startDate && checkDate <= endDate;
+    });
+  }
+
+  // Remove the useEffect that was calling refreshReservations
+
+  useEffect(() => {
+    // Update selected days when editingReservation changes
+    if (editingReservation?.dateStart && editingReservation?.dateEnd) {
+      const start = new Date(editingReservation.dateStart);
+      const end = new Date(editingReservation.dateEnd);
+      if (start.getMonth() === currentDate.getMonth() && start.getFullYear() === currentDate.getFullYear()) {
+        const newSelectedDays = [];
+        for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+          newSelectedDays.push(d.getDate());
+        }
+        setSelectedDays(newSelectedDays);
+      } else {
+        setSelectedDays([]);
+      }
+    }
+  }, [editingReservation, currentDate]);
 
   useEffect(() => {
     const handleMouseUp = () => setIsSelecting(false)
@@ -97,10 +172,18 @@ export function MobileCalendar() {
         {days.map((day) => (
           <div
             key={day}
-            className={`h-10 sm:h-12 flex items-center justify-center text-sm rounded-full 
-              ${isToday(day) ? 'bg-primary text-primary-foreground font-bold' : ''}
-              ${selectedDays.includes(day) ? 'bg-secondary text-secondary-foreground' : ''}
-              ${!selectedDays.includes(day) && !isToday(day) ? 'hover:bg-muted' : ''}
+            className={`h-10 sm:h-12 flex items-center justify-center text-sm
+              ${isWithinReservation(day) ? '-mx-[1px]' : ''}
+              ${isReservationStart(day) ? 'border-2 border-r-0 border-primary rounded-l-full' : ''}
+              ${isReservationEnd(day) ? 'border-2 border-l-0 border-primary rounded-r-full' : ''}
+              ${isWithinReservation(day) && !isReservationStart(day) && !isReservationEnd(day) ? 'border-t-2 border-b-2 border-primary' : ''}
+              ${selectedDays.includes(day) ?
+                (isFirstSelected(day) || isLastSelected(day) ?
+                  `bg-primary ${isFirstSelected(day) ? 'rounded-l-full' : ''} ${isLastSelected(day) ? 'rounded-r-full' : ''} text-primary-foreground` :
+                  'bg-gray-300 rounded text-gray-800'
+                ) :
+                'hover:bg-muted'
+              }
             `}
             onMouseDown={() => handleDayInteractionStart(day)}
             onMouseEnter={() => handleDayInteractionMove(day)}
@@ -121,9 +204,6 @@ export function MobileCalendar() {
             <span className="w-8 h-8 flex items-center justify-center">{day}</span>
           </div>
         ))}
-      </div>
-      <div className="mt-4 text-sm text-muted-foreground">
-        Selected days: {selectedDays.join(', ')}
       </div>
     </div>
   )

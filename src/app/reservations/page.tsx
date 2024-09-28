@@ -7,7 +7,7 @@ import ReservationList from '@/components/Reservation/ReservationList';
 import { Months, allColumns, defaultColumns } from '@/lib/projectTypes';
 
 export default function ReservationsPage() {
-    const { reservations, isLoading, currentMonth, setCurrentMonth } = useReservation();
+    const { reservations, isLoading } = useReservation();
 
     const {
         sortedReservations,
