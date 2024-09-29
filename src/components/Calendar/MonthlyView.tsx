@@ -8,7 +8,7 @@ import { Month, Months } from '@/lib/projectTypes';
 import { useSwipeable } from 'react-swipeable';
 
 export function MonthlyView() {
-  const { reservations, updateEditingReservation, handleOpenDrawer, editingReservation, getReservationsByMonth, setEditingReservation } = useReservation();
+  const { reservations, updateEditingReservation, handleOpenDrawer, resetEditingReservation, editingReservation, getReservationsByMonth, setEditingReservation } = useReservation();
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [isSelecting, setIsSelecting] = useState(false)
@@ -60,6 +60,9 @@ export function MonthlyView() {
     if (!isWithinExistingReservation) {
       setIsSelecting(true);
       setSelectedDays([day]);
+      if (editingReservation?.id) {
+        resetEditingReservation();
+      }
       updateEditingReservation({
         dateStart: selectedDate,
         dateEnd: selectedDate,
@@ -94,22 +97,10 @@ export function MonthlyView() {
 
         const sortedSelection = newSelection.sort((a, b) => a - b)
 
-        // Create Date objects for the selected range
-        const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), sortedSelection[0]);
-        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), endDay);
-
-        // Update the reservation context
-        updateEditingReservation({
-          dateStart: startDate,
-          dateEnd: endDate,
-        });
-
         // If we encountered an existing reservation, end the interaction
         if (endDay !== day) {
-          setIsSelecting(false)
           handleDayInteractionEnd()
         }
-
         return sortedSelection
       })
     }
@@ -124,6 +115,7 @@ export function MonthlyView() {
         dateStart: startDate,
         dateEnd: endDate,
       });
+
       handleOpenDrawer();
     }
   }

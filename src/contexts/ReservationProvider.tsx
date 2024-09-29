@@ -104,7 +104,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         } catch (error) {
             console.error('Error adding new reservation:', error);
         }
-    }, [resetEditingReservation]);
+    }, []);
 
     const updateReservation = useCallback(async (id: string, data: Partial<Reservation>) => {
         try {
