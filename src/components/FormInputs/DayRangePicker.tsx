@@ -13,7 +13,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
     currentDateRange: [Date, Date]
@@ -30,6 +30,22 @@ export default function DateRangePicker({
             : undefined
     )
     const [isOpen, setIsOpen] = useState(false)
+    const triggerRef = useRef<HTMLButtonElement>(null)
+    const [popoverWidth, setPopoverWidth] = useState<number>(0)
+
+
+    useEffect(() => {
+        const updateWidth = () => {
+            if (triggerRef.current) {
+                const newWidth = Math.max(triggerRef.current.offsetWidth, 100) // Minimum width of 320px
+                setPopoverWidth(newWidth)
+            }
+        }
+
+        updateWidth()
+        window.addEventListener('resize', updateWidth)
+        return () => window.removeEventListener('resize', updateWidth)
+    }, [])
 
     useEffect(() => {
         console.log("currentDateRange", currentDateRange)
@@ -64,6 +80,7 @@ export default function DateRangePicker({
             <Popover open={isOpen} onOpenChange={handleOpenChange}>
                 <PopoverTrigger asChild>
                     <Button
+                        ref={triggerRef}
                         id="date"
                         variant={"outline"}
                         className={cn(
@@ -86,7 +103,8 @@ export default function DateRangePicker({
                         )}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent style={{ minHeight: '100px', width: `${popoverWidth}px`, maxWidth: '100vw' }}
+                    className="p-2" align="start">
                     <Calendar
                         initialFocus
                         mode="range"
@@ -97,7 +115,7 @@ export default function DateRangePicker({
                     />
                 </PopoverContent>
             </Popover>
-        </div>
+        </div >
     )
 }
 
