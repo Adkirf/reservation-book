@@ -16,8 +16,8 @@ import {
 import { useEffect, useState } from "react"
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
-    currentDateRange?: [Date, Date]
-    onDateRangeChange?: (dateRange: DateRange | undefined) => void
+    currentDateRange: [Date, Date]
+    onDateRangeChange: (dateRange: DateRange) => void
 }
 
 export default function DateRangePicker({
@@ -39,7 +39,10 @@ export default function DateRangePicker({
     }, [currentDateRange])
 
     const handleDateSelect = (newDate: DateRange | undefined) => {
-        setDate(newDate)
+        if (newDate) {
+            setDate(newDate)
+            onDateRangeChange(newDate)
+        }
     }
 
     const formatDate = (date: Date | undefined) => {
