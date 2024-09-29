@@ -13,7 +13,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
     currentDateRange: [Date, Date]
@@ -55,6 +55,10 @@ export default function DateRangePicker({
         setIsOpen(open)
     }
 
+    const handleButtonClick = useCallback(() => {
+        setIsOpen(true)
+    }, [])
+
     return (
         <div className="grid gap-2">
             <Popover open={isOpen} onOpenChange={handleOpenChange}>
@@ -66,7 +70,7 @@ export default function DateRangePicker({
                             "w-full justify-start text-left font-normal",
                             !date && "text-muted-foreground"
                         )}
-                        onClick={() => setIsOpen(true)}
+                        onClick={handleButtonClick}
                     >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (
