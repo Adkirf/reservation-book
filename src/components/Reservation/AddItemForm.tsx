@@ -203,6 +203,7 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <DateRangePicker
               currentDateRange={editingReservation?.dateStart && editingReservation?.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]}
               onDateRangeChange={handleDateRangeChange}
+              onClose={onClose}  // Add this line
             />
           </div>
         </div>

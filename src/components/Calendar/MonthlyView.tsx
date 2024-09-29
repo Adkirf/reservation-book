@@ -12,6 +12,7 @@ export function MonthlyView() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [isSelecting, setIsSelecting] = useState(false)
+  const [adjustingEnd, setAdjustingEnd] = useState<'start' | 'end' | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null)
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
@@ -58,56 +59,62 @@ export function MonthlyView() {
     });
 
     if (!isWithinExistingReservation) {
-      setIsSelecting(true);
-      setSelectedDays([day]);
-      if (editingReservation?.id) {
-        resetEditingReservation();
+      if (selectedDays.length > 0) {
+        if (day === selectedDays[0]) {
+          setAdjustingEnd('start');
+          setIsSelecting(true);
+        } else if (day === selectedDays[selectedDays.length - 1]) {
+          setAdjustingEnd('end');
+          setIsSelecting(true);
+        }
+      } else {
+        setIsSelecting(true);
+        setSelectedDays([day]);
+        setAdjustingEnd(null);
+        updateEditingReservation({
+          dateStart: selectedDate,
+          dateEnd: selectedDate,
+        });
       }
-      updateEditingReservation({
-        dateStart: selectedDate,
-        dateEnd: selectedDate,
-      });
-    } else {
-      // Optionally, you can add some feedback here, like showing an alert
-      console.log("Cannot start selection within an existing reservation");
     }
   }
 
   const handleDayInteractionMove = (day: number) => {
     if (isSelecting) {
       setSelectedDays(prevSelected => {
-        const lastSelected = prevSelected[prevSelected.length - 1]
-        if (lastSelected === day) return prevSelected
+        if (prevSelected.length === 0) return [day];
 
-        const newSelection = [...prevSelected]
-        const step = Math.sign(day - lastSelected)
-        let endDay = lastSelected
+        const firstSelected = prevSelected[0];
+        const lastSelected = prevSelected[prevSelected.length - 1];
 
-        for (let i = lastSelected + step; i !== day + step; i += step) {
-          if (isWithinReservation(i)) {
-            // Stop selection at the day before the existing reservation
-            endDay = i - step
-            break
-          }
-          if (!newSelection.includes(i)) {
-            newSelection.push(i)
-            endDay = i
-          }
+        let newSelection: number[];
+
+        if (prevSelected.length === 1) {
+          // When only one day is selected, allow growing in both directions
+          newSelection = range(Math.min(firstSelected, day), Math.max(firstSelected, day));
+        } else if (adjustingEnd === 'start' && day <= lastSelected) {
+          newSelection = range(day, lastSelected);
+        } else if (adjustingEnd === 'end' && day >= firstSelected) {
+          newSelection = range(firstSelected, day);
+        } else if (!adjustingEnd) {
+          // This case handles the initial selection
+          newSelection = range(Math.min(firstSelected, day), Math.max(firstSelected, day));
+        } else {
+          // If trying to adjust beyond the fixed end, don't change the selection
+          return prevSelected;
         }
 
-        const sortedSelection = newSelection.sort((a, b) => a - b)
+        // Filter out days that are within existing reservations
+        newSelection = newSelection.filter(d => !isWithinReservation(d));
 
-        // If we encountered an existing reservation, end the interaction
-        if (endDay !== day) {
-          handleDayInteractionEnd()
-        }
-        return sortedSelection
-      })
+        return newSelection;
+      });
     }
   }
 
   const handleDayInteractionEnd = () => {
     setIsSelecting(false);
+    setAdjustingEnd(null);
     if (selectedDays.length > 0) {
       const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
       const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
@@ -115,8 +122,6 @@ export function MonthlyView() {
         dateStart: startDate,
         dateEnd: endDate,
       });
-
-      handleOpenDrawer();
     }
   }
 
@@ -172,16 +177,18 @@ export function MonthlyView() {
     });
   }
 
-  // Remove the useEffect that was calling refreshReservations
+  // Helper function to generate a range of numbers
+  const range = (start: number, end: number) => {
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
 
   useEffect(() => {
-    // Update selected days when editingReservation changes
     if (editingReservation?.dateStart && editingReservation?.dateEnd) {
       const start = new Date(editingReservation.dateStart);
       const end = new Date(editingReservation.dateEnd);
       if (start.getMonth() === currentDate.getMonth() && start.getFullYear() === currentDate.getFullYear()) {
         const newSelectedDays = [];
-        for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           newSelectedDays.push(d.getDate());
         }
         setSelectedDays(newSelectedDays);
@@ -200,6 +207,22 @@ export function MonthlyView() {
       document.removeEventListener('touchend', handleMouseUp)
     }
   }, [])
+
+  useEffect(() => {
+    if (isSelecting && selectedDays.length > 0) {
+      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
+      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
+
+      // Only update if the dates have actually changed
+      if (startDate.getTime() !== editingReservation?.dateStart?.getTime() ||
+        endDate.getTime() !== editingReservation?.dateEnd?.getTime()) {
+        updateEditingReservation({
+          dateStart: startDate,
+          dateEnd: endDate,
+        });
+      }
+    }
+  }, [selectedDays, isSelecting, currentDate, editingReservation]);
 
   return (
     <div className="h-full w-full md:max-w-[400px] p-4 flex flex-col">
