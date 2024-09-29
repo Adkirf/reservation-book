@@ -21,11 +21,10 @@ interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export default function DateRangePicker({
-    className,
     currentDateRange,
     onDateRangeChange,
 }: DateRangePickerProps) {
-    const [date, setDate] = React.useState<DateRange | undefined>(
+    const [date, setDate] = useState<DateRange | undefined>(
         currentDateRange && isValidDateRange(currentDateRange)
             ? { from: currentDateRange[0], to: currentDateRange[1] }
             : undefined
@@ -33,6 +32,7 @@ export default function DateRangePicker({
     const [isOpen, setIsOpen] = useState(false)
 
     useEffect(() => {
+        console.log("currentDateRange", currentDateRange)
         if (currentDateRange && isValidDateRange(currentDateRange)) {
             setDate({ from: currentDateRange[0], to: currentDateRange[1] })
         }
@@ -40,10 +40,6 @@ export default function DateRangePicker({
 
     const handleDateSelect = (newDate: DateRange | undefined) => {
         setDate(newDate)
-        onDateRangeChange?.(newDate)
-        if (newDate?.to) {
-            setIsOpen(false)
-        }
     }
 
     const formatDate = (date: Date | undefined) => {
@@ -57,7 +53,7 @@ export default function DateRangePicker({
     }
 
     return (
-        <div className={cn("grid gap-2", className)}>
+        <div className="grid gap-2">
             <Popover open={isOpen} onOpenChange={handleOpenChange}>
                 <PopoverTrigger asChild>
                     <Button

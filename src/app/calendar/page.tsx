@@ -11,7 +11,6 @@ export default function CalendarPage() {
 
         <div className="flex h-full justify-center overflow-hidden"> {/* or any other appropriate height */}
             <MonthlyView />
-
         </div>
     );
 }
