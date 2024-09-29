@@ -9,7 +9,7 @@ export default function CalendarPage() {
     return (
         // Wrap the component with ReservationProvider for reservation context
 
-        <div className="flex h-screen overflow-x-auto overflow-y-hidden"> {/* or any other appropriate height */}
+        <div className="flex h-full justify-center overflow-hidden"> {/* or any other appropriate height */}
             <MonthlyView />
 
         </div>

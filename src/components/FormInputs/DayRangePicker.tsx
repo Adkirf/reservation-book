@@ -54,12 +54,11 @@ export default function DateRangePicker({
     }
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open)
-
     }
 
     return (
         <div className={cn("grid gap-2", className)}>
-            <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <Popover open={isOpen} onOpenChange={handleOpenChange}>
                 <PopoverTrigger asChild>
                     <Button
                         id="date"
@@ -68,6 +67,7 @@ export default function DateRangePicker({
                             "w-full justify-start text-left font-normal",
                             !date && "text-muted-foreground"
                         )}
+                        onClick={() => setIsOpen(true)}
                     >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (

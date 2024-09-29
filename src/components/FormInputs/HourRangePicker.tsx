@@ -117,7 +117,12 @@ export function HourRangePickerComponent({ currentHourRange, onHourRangeChange }
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button ref={triggerRef} variant="outline" className="w-full justify-start text-left font-normal text-sm">
+        <Button
+          ref={triggerRef}
+          variant="outline"
+          className="w-full justify-start text-left font-normal text-sm"
+          onClick={() => setIsOpen(true)}
+        >
           <Clock className="mr-2 h-4 w-4" />
           <span>{formatHour(arrival)} - {formatHour(departure)}</span>
         </Button>
