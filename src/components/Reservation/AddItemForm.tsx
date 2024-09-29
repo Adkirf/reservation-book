@@ -124,8 +124,19 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
 
   const handleDateRangeChange = (dateRange: DateRange | undefined) => {
     if (dateRange?.from && dateRange?.to) {
-      updateField("dateStart", dateRange.from)
-      updateField("dateEnd", dateRange.to)
+      const newStart = new Date(dateRange.from)
+      const newEnd = new Date(dateRange.to)
+
+      // Preserve the time from the existing dateStart and dateEnd
+      if (editingReservation?.dateStart) {
+        newStart.setHours(editingReservation.dateStart.getHours(), editingReservation.dateStart.getMinutes())
+      }
+      if (editingReservation?.dateEnd) {
+        newEnd.setHours(editingReservation.dateEnd.getHours(), editingReservation.dateEnd.getMinutes())
+      }
+
+      updateField("dateStart", newStart)
+      updateField("dateEnd", newEnd)
     }
   }
 
@@ -182,16 +193,16 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
         <div className="space-y-4">
           <div>
             <Label>Date Range</Label>
-            <div>
-              <Label>Time Range</Label>
-              <HourRangePickerComponent
-                currentHourRange={editingReservation && editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date()]}
-                onHourRangeChange={handleHourRangeChange}
-              />
-            </div>
             <DateRangePicker
-              currentDateRange={editingReservation && editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : undefined}
+              currentDateRange={editingReservation?.dateStart && editingReservation?.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : undefined}
               onDateRangeChange={handleDateRangeChange}
+            />
+          </div>
+          <div>
+            <Label>Time Range</Label>
+            <HourRangePickerComponent
+              currentHourRange={editingReservation?.dateStart && editingReservation?.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date()]}
+              onHourRangeChange={handleHourRangeChange}
             />
           </div>
         </div>

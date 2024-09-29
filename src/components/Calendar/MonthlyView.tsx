@@ -202,7 +202,7 @@ export function MonthlyView() {
   }, [])
 
   return (
-    <div className="h-full w-full p-4 flex flex-col flex-grow">
+    <div className="h-full min-w-full p-4 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Previous month">
           <ChevronLeft className="h-4 w-4" />
@@ -214,7 +214,7 @@ export function MonthlyView() {
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-      <div className="grid grid-cols-7 text-center" ref={calendarRef}>
+      <div className="grid grid-cols-7 text-center overflow-x-auto" ref={calendarRef}>
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div key={day} className="text-sm font-medium text-muted-foreground">
             {day}
@@ -268,7 +268,7 @@ export function MonthlyView() {
       </div>
       <div
         {...handlers}
-        className="flex flex-col flex-grow"
+        className="flex-grow"
       >
       </div>
     </div>

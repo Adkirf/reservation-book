@@ -32,7 +32,6 @@ export default function DateRangePicker({
     )
     const [isOpen, setIsOpen] = useState(false)
 
-
     useEffect(() => {
         if (currentDateRange && isValidDateRange(currentDateRange)) {
             setDate({ from: currentDateRange[0], to: currentDateRange[1] })
@@ -42,6 +41,9 @@ export default function DateRangePicker({
     const handleDateSelect = (newDate: DateRange | undefined) => {
         setDate(newDate)
         onDateRangeChange?.(newDate)
+        if (newDate?.to) {
+            setIsOpen(false)
+        }
     }
 
     const formatDate = (date: Date | undefined) => {
@@ -57,7 +59,7 @@ export default function DateRangePicker({
 
     return (
         <div className={cn("grid gap-2", className)}>
-            <Popover open={isOpen} onOpenChange={handleOpenChange}>
+            <Popover open={isOpen} onOpenChange={setIsOpen}>
                 <PopoverTrigger asChild>
                     <Button
                         id="date"
@@ -85,13 +87,10 @@ export default function DateRangePicker({
                     <Calendar
                         initialFocus
                         mode="range"
-                        defaultMonth={date?.from}
+                        defaultMonth={date?.from || new Date()}
                         selected={date}
                         onSelect={handleDateSelect}
                         numberOfMonths={1}
-                        disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                        }
                     />
                 </PopoverContent>
             </Popover>
