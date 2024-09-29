@@ -182,16 +182,16 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
         <div className="space-y-4">
           <div>
             <Label>Date Range</Label>
+            <div>
+              <Label>Time Range</Label>
+              <HourRangePickerComponent
+                currentHourRange={editingReservation && editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date()]}
+                onHourRangeChange={handleHourRangeChange}
+              />
+            </div>
             <DateRangePicker
               currentDateRange={editingReservation && editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : undefined}
               onDateRangeChange={handleDateRangeChange}
-            />
-          </div>
-          <div>
-            <Label>Time Range</Label>
-            <HourRangePickerComponent
-              currentHourRange={editingReservation && editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date()]}
-              onHourRangeChange={handleHourRangeChange}
             />
           </div>
         </div>
