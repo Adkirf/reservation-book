@@ -60,12 +60,11 @@ export default function RootLayout({
 }
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { isDrawerOpen, handleOpenDrawer, handleCloseDrawer } = useReservation();
 
   return (
-    <div className="min-h-full flex flex-col sm:flex-row bg-background text-foreground">
+    <div className="h-screen flex flex-col sm:flex-row bg-background text-foreground">
       <MenuSidebar />
-      <div className="flex-grow flex flex-col">
+      <div className="flex-grow flex flex-col overflow-hidden">
         <header className="sticky top-0 z-10 bg-background border-b sm:hidden">
           <div className="container mx-auto px-4 h-16 flex items-center">
             <MenuSheetComponent />
@@ -73,7 +72,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-grow flex items-center justify-center">
+        <main className="flex-grow overflow-hidden">
           {children}
         </main>
 

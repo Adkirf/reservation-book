@@ -5,9 +5,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useReservation } from '@/contexts/ReservationProvider';
 import { Month, Months } from '@/lib/projectTypes';
+import { useSwipeable } from 'react-swipeable';
 
-export function MobileCalendar() {
-  const { reservations, updateEditingReservation, handleOpenDrawer, editingReservation, getReservationsByMonth } = useReservation();
+export function MonthlyView() {
+  const { reservations, updateEditingReservation, handleOpenDrawer, editingReservation, getReservationsByMonth, setEditingReservation } = useReservation();
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [isSelecting, setIsSelecting] = useState(false)
@@ -39,14 +40,34 @@ export function MobileCalendar() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
     setSelectedDays([])
   }
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => nextMonth(),
+    onSwipedRight: () => prevMonth(),
+    swipeDuration: 500,
+    preventScrollOnSwipe: true,
+    trackMouse: true
+  });
+
   const handleDayInteractionStart = (day: number) => {
-    setIsSelecting(true);
-    setSelectedDays([day]);
     const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    updateEditingReservation({
-      dateStart: selectedDate,
-      dateEnd: selectedDate,
+    const isWithinExistingReservation = currentMonthReservations.some(reservation => {
+      const startDate = new Date(reservation.dateStart);
+      const endDate = new Date(reservation.dateEnd);
+      return selectedDate >= startDate && selectedDate <= endDate;
     });
+
+    if (!isWithinExistingReservation) {
+      setIsSelecting(true);
+      setSelectedDays([day]);
+      updateEditingReservation({
+        dateStart: selectedDate,
+        dateEnd: selectedDate,
+      });
+    } else {
+      // Optionally, you can add some feedback here, like showing an alert
+      console.log("Cannot start selection within an existing reservation");
+    }
   }
 
   const handleDayInteractionMove = (day: number) => {
@@ -57,21 +78,37 @@ export function MobileCalendar() {
 
         const newSelection = [...prevSelected]
         const step = Math.sign(day - lastSelected)
+        let endDay = lastSelected
+
         for (let i = lastSelected + step; i !== day + step; i += step) {
-          if (!newSelection.includes(i)) newSelection.push(i)
+          if (isWithinReservation(i)) {
+            // Stop selection at the day before the existing reservation
+            endDay = i - step
+            break
+          }
+          if (!newSelection.includes(i)) {
+            newSelection.push(i)
+            endDay = i
+          }
         }
+
         const sortedSelection = newSelection.sort((a, b) => a - b)
 
         // Create Date objects for the selected range
         const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), sortedSelection[0]);
-        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), sortedSelection[sortedSelection.length - 1]);
-        console.log("startDate", startDate);
-        console.log("endDate", endDate);
+        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), endDay);
+
         // Update the reservation context
         updateEditingReservation({
           dateStart: startDate,
           dateEnd: endDate,
         });
+
+        // If we encountered an existing reservation, end the interaction
+        if (endDay !== day) {
+          setIsSelecting(false)
+          handleDayInteractionEnd()
+        }
 
         return sortedSelection
       })
@@ -81,8 +118,13 @@ export function MobileCalendar() {
   const handleDayInteractionEnd = () => {
     setIsSelecting(false);
     if (selectedDays.length > 0) {
-      console.log("Selected days:", selectedDays);
-      handleOpenDrawer(); // Open the drawer when selection ends
+      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
+      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
+      updateEditingReservation({
+        dateStart: startDate,
+        dateEnd: endDate,
+      });
+      handleOpenDrawer();
     }
   }
 
@@ -94,6 +136,26 @@ export function MobileCalendar() {
   const currentYear = currentDate.getFullYear();
   const currentMonthReservations = getReservationsByMonth(currentMonth, currentYear);
 
+  const handleDayClick = (day: number, event: React.MouseEvent | React.TouchEvent) => {
+    // For mouse events, prevent default behavior
+    if (event.type === 'click') {
+      event.preventDefault();
+    }
+
+    const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const reservationOnDay = currentMonthReservations.find(reservation => {
+      const startDate = new Date(reservation.dateStart);
+      const endDate = new Date(reservation.dateEnd);
+      return clickedDate >= startDate && clickedDate <= endDate;
+    });
+
+    if (reservationOnDay) {
+      setEditingReservation(reservationOnDay);
+      handleOpenDrawer();
+    } else {
+      handleDayInteractionStart(day);
+    }
+  };
 
   const isReservationStart = (day: number) => {
     return currentMonthReservations.some(reservation => {
@@ -148,7 +210,7 @@ export function MobileCalendar() {
   }, [])
 
   return (
-    <div className="max-w-sm mx-auto p-4">
+    <div className="h-full w-full p-4 flex flex-col flex-grow">
       <div className="flex justify-between items-center mb-4">
         <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Previous month">
           <ChevronLeft className="h-4 w-4" />
@@ -160,19 +222,19 @@ export function MobileCalendar() {
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center" ref={calendarRef}>
+      <div className="grid grid-cols-7 text-center" ref={calendarRef}>
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div key={day} className="text-sm font-medium text-muted-foreground">
             {day}
           </div>
         ))}
         {emptyDays.map((_, index) => (
-          <div key={`empty-${index}`} className="h-10 sm:h-12"></div>
+          <div key={`empty-${index}`} className="aspect-square"></div>
         ))}
         {days.map((day) => (
           <div
             key={day}
-            className={`h-10 sm:h-12 flex items-center justify-center text-sm
+            className={`aspect-square flex items-center justify-center mb-1 text-sm
               ${isWithinReservation(day) ? '-mx-[1px]' : ''}
               ${isReservationStart(day) && isReservationEnd(day) ? 'border-2 border-primary rounded-full' :
                 isReservationStart(day) ? 'border-2 border-r-0 border-primary rounded-l-full' :
@@ -186,10 +248,16 @@ export function MobileCalendar() {
                 'hover:bg-muted'
               }
             `}
-            onMouseDown={() => handleDayInteractionStart(day)}
+            onClick={(e) => handleDayClick(day, e)}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent text selection
+              handleDayInteractionStart(day);
+            }}
             onMouseEnter={() => handleDayInteractionMove(day)}
             onMouseUp={handleDayInteractionEnd}
-            onTouchStart={() => handleDayInteractionStart(day)}
+            onTouchStart={(e) => {
+              handleDayClick(day, e);
+            }}
             onTouchMove={(e) => {
               const touch = e.touches[0]
               const element = document.elementFromPoint(touch.clientX, touch.clientY)
@@ -202,9 +270,14 @@ export function MobileCalendar() {
             onTouchEnd={handleDayInteractionEnd}
             data-day={day}
           >
-            <span className="w-8 h-8 flex items-center justify-center">{day}</span>
+            <span className="w-full h-full flex items-center justify-center">{day}</span>
           </div>
         ))}
+      </div>
+      <div
+        {...handlers}
+        className="flex flex-col flex-grow"
+      >
       </div>
     </div>
   )

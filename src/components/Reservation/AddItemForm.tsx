@@ -91,7 +91,6 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
         } else {
           await addNewReservation(editingReservation as Omit<Reservation, 'id'>);
         }
-        resetEditingReservation(); // Reset the form after successful submission
         setPage(0);
         onClose();
       } catch (error) {

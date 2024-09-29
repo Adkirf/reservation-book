@@ -25,24 +25,18 @@ export default function ReservationsPage() {
     }, [reservations, updateFilters]);
 
     return (
-        <div className="w-full max-w-full overflow-x-hidden">
-            <div className="px-4 py-8">
-                <h1 className="text-2xl font-bold mb-4">Reservations</h1>
-
-                {/* Conditional rendering based on loading state */}
+        <div className="flex flex-col h-full w-full overflow-hidden">
+            <div className="px-4 py-8 flex-grow overflow-hidden">
                 {isLoading ? (
                     <p>Loading reservations...</p>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <ReservationList
-                            reservations={sortedReservations}
-                            searchQuery={searchQuery}
-                            setSearchQuery={setSearchQuery}
-                            visibleColumns={visibleColumns}
-
-                            toggleColumn={toggleColumn}
-                        />
-                    </div>
+                    <ReservationList
+                        reservations={sortedReservations}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        visibleColumns={visibleColumns}
+                        toggleColumn={toggleColumn}
+                    />
                 )}
             </div>
         </div>

@@ -67,6 +67,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
     }, []);
 
     const resetEditingReservation = useCallback(() => {
+        console.log("resetting")
         setEditingReservation({
             name: "",
             dateStart: new Date(),
@@ -100,7 +101,6 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
             const id = await addReservation(newReservation);
             const reservationWithId = { ...newReservation, id };
             setReservations(prevReservations => [...prevReservations, reservationWithId]);
-            resetEditingReservation();
         } catch (error) {
             console.error('Error adding new reservation:', error);
         }
@@ -122,14 +122,13 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
     }, []);
 
     const handleOpenDrawer = useCallback(() => {
-        console.log("Opening drawer");
         setIsDrawerOpen(true);
     }, []);
 
     const handleCloseDrawer = useCallback(() => {
+
         setIsDrawerOpen(false);
-        // Don't reset editingReservation here
-    }, []);
+    }, [editingReservation, resetEditingReservation]);
 
     const getReservationsByMonth = useCallback((month: Month, year: number) => {
         const monthIndex = Months.indexOf(month);
@@ -174,7 +173,16 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
     return (
         <ReservationContext.Provider value={contextValue}>
             {children}
-            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <Drawer
+                open={isDrawerOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        handleCloseDrawer();
+                    } else {
+                        setIsDrawerOpen(true);
+                    }
+                }}
+            >
                 {isDrawerOpen && (
                     <AddItemForm
                         onClose={handleCloseDrawer}

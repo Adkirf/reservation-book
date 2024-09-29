@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MobileCalendar } from '@/components/Calendar/MonthlyView';
+import { MonthlyView } from '@/components/Calendar/MonthlyView';
 
 // Define the possible view types for the calendar
 
@@ -12,8 +12,8 @@ export default function CalendarPage() {
     return (
         // Wrap the component with ReservationProvider for reservation context
 
-        <div className="w-full">
-            <MobileCalendar />
+        <div className="flex flex-col flex-grow h-full w-full"> {/* or any other appropriate height */}
+            <MonthlyView />
 
         </div>
     );

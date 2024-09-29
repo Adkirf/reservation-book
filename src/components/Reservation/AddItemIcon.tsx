@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { useReservation } from '@/contexts/ReservationProvider';
 
 export function AddItemIcon() {
-    const { handleOpenDrawer, updateEditingReservation } = useReservation();
+    const { editingReservation, handleOpenDrawer, resetEditingReservation } = useReservation();
 
     const handleClick = () => {
         // Initialize a new reservation if none exists
-
+        if (editingReservation?.id) {
+            resetEditingReservation()
+        }
         handleOpenDrawer();
     };
 

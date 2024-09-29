@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Reservation } from '@/lib/projectTypes'
+import { allColumns, Reservation } from '@/lib/projectTypes'
 import ReservationTable from './ReservationTable'
 
 interface ReservationListProps {
@@ -38,14 +38,49 @@ export default function ReservationList({
         setFilteredReservations(reservations);
     }, [reservations]);
 
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
+    };
 
+    function capitalizeFirstLetter(string: string): string {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 
     return (
-        <div className="">
-            <div className="flex justify-between items-center mb-4">
-
+        <div className="flex flex-col h-full">
+            <div className='flex flex-row gap-2 mb-4'>
+                <Input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="max-w-sm"
+                />
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline"><Filter className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {allColumns.map((column) => (
+                            <DropdownMenuCheckboxItem
+                                key={column}
+                                checked={visibleColumns.includes(column)}
+                                onCheckedChange={() => toggleColumn(column)}
+                                disabled={visibleColumns.length === 1 && visibleColumns.includes(column)}
+                                onSelect={(event) => {
+                                    event.preventDefault();
+                                }}
+                            >
+                                {column === 'numberOfPeople' ? 'Guests' : capitalizeFirstLetter(column)}
+                            </DropdownMenuCheckboxItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
-            <div className='px-4'>
+
+            <div className="flex-grow overflow-hidden">
                 <ReservationTable
                     reservations={filteredReservations}
                     visibleColumns={visibleColumns}
@@ -54,7 +89,6 @@ export default function ReservationList({
                     toggleColumn={toggleColumn}
                 />
             </div>
-
         </div>
     )
 }

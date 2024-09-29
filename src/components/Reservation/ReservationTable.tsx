@@ -13,7 +13,7 @@ import {
     TableBody,
     TableCell,
 } from "@/components/ui/table"
-import { allColumns, Reservation } from '@/lib/projectTypes'
+import { Reservation } from '@/lib/projectTypes'
 import { format } from 'date-fns';
 import { ChevronUp, ChevronDown, Filter } from 'lucide-react';
 import { useReservationFilters } from '@/hooks/useReservationFilter';
@@ -48,11 +48,7 @@ function capitalizeFirstLetter(string: string): string {
  */
 export default function ReservationTable({ reservations, visibleColumns, searchQuery, setSearchQuery, toggleColumn }: ReservationTableProps) {
     const { sortConfig, requestSort, formatDateRange } = useReservationFilters(reservations);
-    const { setEditingReservation } = useReservation();
-
-    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-    };
+    const { setEditingReservation, handleOpenDrawer } = useReservation();
 
     const formatCellValue = (value: any, column: string): string => {
         if (value === null || value === undefined) return '';
@@ -68,50 +64,22 @@ export default function ReservationTable({ reservations, visibleColumns, searchQ
         }
     };
 
+    const handleRowClick = (reservation: Reservation) => {
+        setEditingReservation(reservation);
+        handleOpenDrawer();
+    };
+
     return (
-        <Card>
-            <CardHeader>
-                <div className="mb-4 flex flex-row gap-2">
-                    <Input
-                        type="text"
-                        placeholder="Search..."
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        className="max-w-sm"
-                    />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline"><Filter className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {allColumns.map((column) => (
-                                <DropdownMenuCheckboxItem
-                                    key={column}
-                                    checked={visibleColumns.includes(column)}
-                                    onCheckedChange={() => toggleColumn(column)}
-                                    disabled={visibleColumns.length === 1 && visibleColumns.includes(column)}
-                                    onSelect={(event) => {
-                                        event.preventDefault();
-                                    }}
-                                >
-                                    {column === 'numberOfPeople' ? 'Guests' : capitalizeFirstLetter(column)}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </CardHeader>
-            <CardContent className="overflow-x-auto">
+        <Card className="h-full flex flex-col">
+            <CardContent className="flex-grow overflow-auto relative">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-10">
                         <TableRow>
                             {visibleColumns.map((column) => (
                                 <TableHead
                                     key={column}
                                     onClick={() => requestSort(column)}
-                                    className="cursor-pointer whitespace-nowrap"
+                                    className="cursor-pointer whitespace-nowrap bg-background"
                                 >
                                     {column === 'numberOfPeople'
                                         ? 'Guests'
@@ -127,19 +95,24 @@ export default function ReservationTable({ reservations, visibleColumns, searchQ
                     </TableHeader>
                     <TableBody>
                         {reservations.map((reservation) => (
-                            <TableRow key={reservation.id}>
+                            <TableRow
+                                key={reservation.id}
+                                onClick={() => handleRowClick(reservation)}
+                                className="cursor-pointer hover:bg-muted/50"
+                            >
                                 {visibleColumns.map((column) => (
                                     <TableCell
                                         key={column}
-                                        className="whitespace-nowrap cursor-pointer"
-                                        onClick={() => setEditingReservation(reservation)}
+                                        className="whitespace-nowrap"
                                     >
                                         {formatCellValue(reservation[column as keyof Reservation], column)}
                                     </TableCell>
                                 ))}
                             </TableRow>
                         ))}
-                        <span className="block h-4" />
+                        <TableRow>
+                            <TableCell colSpan={visibleColumns.length} className="h-4" />
+                        </TableRow>
                     </TableBody>
                 </Table>
             </CardContent>
