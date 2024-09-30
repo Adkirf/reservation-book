@@ -16,15 +16,19 @@ import { NumberInput } from "@/components/FormInputs/NumberInput"
 
 interface AddItemFormProps {
   onClose: () => void;
+  initialPage?: number; // New prop
 }
 
-export function AddItemForm({ onClose }: AddItemFormProps) {
+export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
   const {
     editingReservation,
     addNewReservation,
     updateReservation,
     updateEditingReservation,
-    resetEditingReservation // Add this
+    resetEditingReservation,
+    setCurrentDate,
+    setIsEditing,
+    reservations, // Add this to get access to the original reservations
   } = useReservation()
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
     }
   }, [editingReservation, resetEditingReservation]);
 
-  const [page, setPage] = useState(0)
+  const [page, setPage] = useState(initialPage)
   const [validity, setValidity] = useState<Record<keyof Reservation, "valid" | "invalid" | "empty">>({
     id: "valid",
     name: "empty",
@@ -57,7 +61,9 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
       })
       setValidity(newValidity)
     }
-  }, [editingReservation])
+    // Set the initial page
+    setPage(initialPage)
+  }, [editingReservation, initialPage])
 
   useEffect(() => {
     setHasChanges(changedFields.size > 0)
@@ -122,23 +128,6 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
     setValidity(newValidity)
   }
 
-  const handleDateRangeChange = (dateRange: DateRange | undefined) => {
-    if (dateRange?.from && dateRange?.to) {
-      const newStart = new Date(dateRange.from)
-      const newEnd = new Date(dateRange.to)
-
-      // Preserve the time from the existing dateStart and dateEnd
-      if (editingReservation?.dateStart) {
-        newStart.setHours(editingReservation.dateStart.getHours(), editingReservation.dateStart.getMinutes())
-      }
-      if (editingReservation?.dateEnd) {
-        newEnd.setHours(editingReservation.dateEnd.getHours(), editingReservation.dateEnd.getMinutes())
-      }
-
-      updateField("dateStart", newStart)
-      updateField("dateEnd", newEnd)
-    }
-  }
 
   const handleHourRangeChange = (hourRange: [Date, Date]) => {
     const [newStart, newEnd] = hourRange
@@ -153,6 +142,12 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
       updateField("dateStart", updatedStart)
       updateField("dateEnd", updatedEnd)
     }
+  }
+
+  const handleClose = () => {
+    setCurrentDate(editingReservation?.dateStart || new Date())
+    setIsEditing(true)
+    onClose()
   }
 
   const pages = [
@@ -202,7 +197,7 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
             <Label>Date Range</Label>
             <DateRangePicker
               currentDateRange={editingReservation?.dateStart && editingReservation?.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]}
-              onClose={onClose}  // Add this line
+              onClose={handleClose}
             />
           </div>
         </div>
@@ -237,6 +232,19 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
     },
   ]
 
+  // Add this function to check if the editingReservation has changes
+  const hasReservationChanges = () => {
+    if (!editingReservation || !editingReservation.id) return false;
+    const originalReservation = reservations.find(r => r.id === editingReservation.id);
+    if (!originalReservation) return false;
+
+    return ['name', 'dateStart', 'dateEnd', 'comment', 'numberOfPeople', 'contact'].some(field => {
+      const key = field as keyof Reservation;
+      return JSON.stringify(editingReservation[key]) !== JSON.stringify(originalReservation[key]);
+    });
+  };
+
+  // Update the getPageColor function
   const getPageColor = (pageIndex: number) => {
     if (pageIndex > page) return "bg-gray-300" // Upcoming pages are always grey
     const pageFields = pages[pageIndex].fields
@@ -249,10 +257,12 @@ export function AddItemForm({ onClose }: AddItemFormProps) {
     })
 
     if (pageValidity.every((v) => v === "valid")) {
-      // Check if any field on this page has changed
-      const hasChangedField = pageFields.some(field => changedFields.has(field as keyof Reservation))
-      if (isEditing) {
-        return hasChangedField ? "bg-yellow-500" : "bg-gray-300"
+      if (isEditing && editingReservation?.id) {
+        const hasChangedField = pageFields.some(field => {
+          const key = field as keyof Reservation;
+          return JSON.stringify(editingReservation?.[key]) !== JSON.stringify(reservations.find(r => r.id === editingReservation.id)?.[key]);
+        });
+        return hasChangedField ? "bg-yellow-500" : "bg-green-500"
       }
       return "bg-green-500"
     }

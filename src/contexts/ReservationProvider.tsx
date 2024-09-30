@@ -11,15 +11,19 @@ export type EditingReservation = Partial<Reservation> | null;
 // Define the shape of the reservation context
 export interface ReservationContextType {
     reservations: Reservation[];
+    currentDate: Date;
+    isEditing: boolean;
     editingReservation: EditingReservation;
     isLoading: boolean;
     isDrawerOpen: boolean;
     setReservations: React.Dispatch<React.SetStateAction<Reservation[]>>;
+    setCurrentDate: React.Dispatch<React.SetStateAction<Date>>;
+    setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
     setEditingReservation: (reservation: EditingReservation) => void;
     updateEditingReservation: (updateFields: Partial<Reservation>) => void;
     addNewReservation: (reservation: Omit<Reservation, 'id'>) => Promise<void>;
     updateReservation: (id: string, data: Partial<Reservation>) => Promise<void>;
-    handleOpenDrawer: () => void;
+    handleOpenDrawer: (initialPage?: number) => void; // Updated type
     handleCloseDrawer: () => void;
     resetEditingReservation: () => void; // Add this new function
     fetchAllReservations: () => Promise<void>;
@@ -51,9 +55,12 @@ interface ReservationProviderProps {
  */
 export const ReservationProvider: React.FC<ReservationProviderProps> = ({ children }) => {
     const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [currentDate, setCurrentDate] = useState(new Date())
+    const [isEditing, setIsEditing] = useState(false)
     const [editingReservation, setEditingReservation] = useState<EditingReservation>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+    const [initialDrawerPage, setInitialDrawerPage] = useState<number>(0);
 
     const { user } = useAuth();
 
@@ -124,7 +131,8 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         }
     }, []);
 
-    const handleOpenDrawer = useCallback(() => {
+    const handleOpenDrawer = useCallback((initialPage: number = 0) => {
+        setInitialDrawerPage(initialPage);
         setIsDrawerOpen(true);
     }, []);
 
@@ -146,8 +154,12 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         editingReservation,
         isLoading,
         isDrawerOpen,
+        currentDate,
+        isEditing,
         setReservations,
         setEditingReservation,
+        setCurrentDate,
+        setIsEditing,
         updateEditingReservation,
         fetchAllReservations,
         addNewReservation,
@@ -161,8 +173,12 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         editingReservation,
         isLoading,
         isDrawerOpen,
+        currentDate,
+        isEditing,
         setReservations,
         setEditingReservation,
+        setCurrentDate,
+        setIsEditing,
         updateEditingReservation,
         fetchAllReservations,
         addNewReservation,
@@ -189,6 +205,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
                 {isDrawerOpen && (
                     <AddItemForm
                         onClose={handleCloseDrawer}
+                        initialPage={initialDrawerPage}
                     />
                 )}
             </Drawer>

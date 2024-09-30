@@ -9,8 +9,7 @@ import { useSwipeable } from 'react-swipeable';
 import { userSetting } from '@/lib/settings';
 
 export function MonthlyView() {
-  const { reservations, updateEditingReservation, handleOpenDrawer, resetEditingReservation, editingReservation, getReservationsByMonth, setEditingReservation } = useReservation();
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const { currentDate, isEditing, setCurrentDate, setIsEditing, updateEditingReservation, handleOpenDrawer, resetEditingReservation, editingReservation, getReservationsByMonth, setEditingReservation } = useReservation();
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [isSelecting, setIsSelecting] = useState(false)
   const [adjustingEnd, setAdjustingEnd] = useState<'start' | 'end' | null>(null);
@@ -32,6 +31,7 @@ export function MonthlyView() {
       currentDate.getFullYear() === today.getFullYear()
     )
   }
+
 
   const prevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
@@ -58,7 +58,6 @@ export function MonthlyView() {
       event.preventDefault();
     }
 
-    const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     const reservationOnDay = currentMonthReservations.find(reservation => {
       const startDate = new Date(reservation.dateStart);
       const endDate = new Date(reservation.dateEnd);
@@ -67,7 +66,11 @@ export function MonthlyView() {
 
     if (reservationOnDay) {
       setEditingReservation(reservationOnDay);
-      handleOpenDrawer();
+      if (!isEditing) {
+        handleOpenDrawer();
+      } else {
+        handleDayInteractionStart(day);
+      }
     } else {
       handleDayInteractionStart(day);
     }
@@ -81,6 +84,22 @@ export function MonthlyView() {
       return selectedDate >= startDate && selectedDate <= endDate;
     });
 
+    if (isEditing && editingReservation) {
+      const startDay = editingReservation.dateStart?.getDate();
+      const endDay = editingReservation.dateEnd?.getDate();
+
+      if (day === startDay) {
+        setAdjustingEnd('start');
+      } else if (day === endDay) {
+        setAdjustingEnd('end');
+      } else {
+        setAdjustingEnd('end'); // Default to adjusting end when clicking in the middle
+      }
+      setIsSelecting(true);
+      setSelectedDays(range(startDay || 0, endDay || 0));
+      return;
+    }
+
     if (selectedDays.length > 0) {
       if (day === selectedDays[0]) {
         setAdjustingEnd('start');
@@ -91,9 +110,9 @@ export function MonthlyView() {
         setIsSelecting(true);
         return;
       }
-    } else {
-
     }
+
+
     if (!isWithinExistingReservation) {
       setIsSelecting(true);
       setSelectedDays([day]);
@@ -117,26 +136,37 @@ export function MonthlyView() {
       setSelectedDays(prevSelected => {
         if (prevSelected.length === 0) return [day];
 
-        const firstSelected = prevSelected[0];
-        const lastSelected = prevSelected[prevSelected.length - 1];
+        let firstSelected = prevSelected[0];
+        let lastSelected = prevSelected[prevSelected.length - 1];
+
+        if (isEditing) {
+          firstSelected = editingReservation?.dateStart?.getDate() || 0;
+          lastSelected = editingReservation?.dateEnd?.getDate() || 0;
+        }
 
         let newSelection: number[];
 
-        if (prevSelected.length === 1) {
-          newSelection = range(Math.min(firstSelected, day), Math.max(firstSelected, day));
-        } else if (adjustingEnd === 'start' && day <= lastSelected) {
-          newSelection = range(day, lastSelected);
-        } else if (adjustingEnd === 'end' && day >= firstSelected) {
-          newSelection = range(firstSelected, day);
-        } else if (!adjustingEnd) {
-          newSelection = range(firstSelected, day);
+        if (adjustingEnd === 'start') {
+          // Adjusting start date
+          newSelection = range(Math.max(day, 1), lastSelected);
+        } else if (adjustingEnd === 'end') {
+          // Adjusting end date
+          newSelection = range(firstSelected, Math.min(day, daysInMonth));
         } else {
-          // If trying to adjust beyond the fixed end, don't change the selection
-          return prevSelected;
+          // New selection
+          if (isEditing) {
+            newSelection = range(firstSelected, Math.min(day, daysInMonth));
+          } else {
+            newSelection = range(Math.min(firstSelected, day), Math.max(firstSelected, day));
+          }
         }
 
         // Filter out days that are within existing reservations
-        newSelection = newSelection.filter(d => !isWithinReservation(d));
+        // but allow the original start and end dates of the editing reservation
+        newSelection = newSelection.filter(d =>
+          !isWithinReservation(d) ||
+          (isEditing && (d === firstSelected || d === lastSelected || d === day))
+        );
 
         return newSelection;
       });
@@ -160,6 +190,10 @@ export function MonthlyView() {
         dateStart: startDate,
         dateEnd: endDate,
       });
+      if (isEditing) {
+        handleOpenDrawer(1);
+        setIsEditing(false);
+      }
     }
   }
 
