@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useReservation } from '@/contexts/ReservationProvider';
 import { Month, Months } from '@/lib/projectTypes';
 import { useSwipeable } from 'react-swipeable';
+import { userSetting } from '@/lib/settings';
 
 export function MonthlyView() {
   const { reservations, updateEditingReservation, handleOpenDrawer, resetEditingReservation, editingReservation, getReservationsByMonth, setEditingReservation } = useReservation();
@@ -50,6 +51,28 @@ export function MonthlyView() {
     trackMouse: true
   });
 
+
+  const handleDayClick = (day: number, event: React.MouseEvent | React.TouchEvent) => {
+    // For mouse events, prevent default behavior
+    if (event.type === 'click') {
+      event.preventDefault();
+    }
+
+    const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const reservationOnDay = currentMonthReservations.find(reservation => {
+      const startDate = new Date(reservation.dateStart);
+      const endDate = new Date(reservation.dateEnd);
+      return day >= startDate.getDate() && day <= endDate.getDate();
+    });
+
+    if (reservationOnDay) {
+      setEditingReservation(reservationOnDay);
+      handleOpenDrawer();
+    } else {
+      handleDayInteractionStart(day);
+    }
+  };
+
   const handleDayInteractionStart = (day: number) => {
     const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     const isWithinExistingReservation = currentMonthReservations.some(reservation => {
@@ -58,24 +81,34 @@ export function MonthlyView() {
       return selectedDate >= startDate && selectedDate <= endDate;
     });
 
-    if (!isWithinExistingReservation) {
-      if (selectedDays.length > 0) {
-        if (day === selectedDays[0]) {
-          setAdjustingEnd('start');
-          setIsSelecting(true);
-        } else if (day === selectedDays[selectedDays.length - 1]) {
-          setAdjustingEnd('end');
-          setIsSelecting(true);
-        }
-      } else {
+    if (selectedDays.length > 0) {
+      if (day === selectedDays[0]) {
+        setAdjustingEnd('start');
         setIsSelecting(true);
-        setSelectedDays([day]);
-        setAdjustingEnd(null);
-        updateEditingReservation({
-          dateStart: selectedDate,
-          dateEnd: selectedDate,
-        });
+        return;
+      } else if (day === selectedDays[selectedDays.length - 1]) {
+        setAdjustingEnd('end');
+        setIsSelecting(true);
+        return;
       }
+    } else {
+
+    }
+    if (!isWithinExistingReservation) {
+      setIsSelecting(true);
+      setSelectedDays([day]);
+      setAdjustingEnd(null);
+
+      const startDate = new Date(selectedDate);
+      startDate.setHours(userSetting.checkInHour, 0, 0, 0);
+      const endDate = new Date(selectedDate);
+      endDate.setDate(endDate.getDate() + 1);
+      endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
+      resetEditingReservation();
+      updateEditingReservation({
+        dateStart: startDate,
+        dateEnd: endDate,
+      });
     }
   }
 
@@ -90,15 +123,13 @@ export function MonthlyView() {
         let newSelection: number[];
 
         if (prevSelected.length === 1) {
-          // When only one day is selected, allow growing in both directions
           newSelection = range(Math.min(firstSelected, day), Math.max(firstSelected, day));
         } else if (adjustingEnd === 'start' && day <= lastSelected) {
           newSelection = range(day, lastSelected);
         } else if (adjustingEnd === 'end' && day >= firstSelected) {
           newSelection = range(firstSelected, day);
         } else if (!adjustingEnd) {
-          // This case handles the initial selection
-          newSelection = range(Math.min(firstSelected, day), Math.max(firstSelected, day));
+          newSelection = range(firstSelected, day);
         } else {
           // If trying to adjust beyond the fixed end, don't change the selection
           return prevSelected;
@@ -118,6 +149,13 @@ export function MonthlyView() {
     if (selectedDays.length > 0) {
       const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
       const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
+
+      // Set the start date to the check-in hour
+      startDate.setHours(userSetting.checkInHour, 0, 0, 0);
+
+      // Set the end date to the check-out hour of the day after the last selected day
+      endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
+
       updateEditingReservation({
         dateStart: startDate,
         dateEnd: endDate,
@@ -133,26 +171,6 @@ export function MonthlyView() {
   const currentYear = currentDate.getFullYear();
   const currentMonthReservations = getReservationsByMonth(currentMonth, currentYear);
 
-  const handleDayClick = (day: number, event: React.MouseEvent | React.TouchEvent) => {
-    // For mouse events, prevent default behavior
-    if (event.type === 'click') {
-      event.preventDefault();
-    }
-
-    const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const reservationOnDay = currentMonthReservations.find(reservation => {
-      const startDate = new Date(reservation.dateStart);
-      const endDate = new Date(reservation.dateEnd);
-      return clickedDate >= startDate && clickedDate <= endDate;
-    });
-
-    if (reservationOnDay) {
-      setEditingReservation(reservationOnDay);
-      handleOpenDrawer();
-    } else {
-      handleDayInteractionStart(day);
-    }
-  };
 
   const isReservationStart = (day: number) => {
     return currentMonthReservations.some(reservation => {
@@ -191,6 +209,10 @@ export function MonthlyView() {
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           newSelectedDays.push(d.getDate());
         }
+        // Include the end date
+        if (end.getMonth() === currentDate.getMonth() && end.getFullYear() === currentDate.getFullYear()) {
+          newSelectedDays.push(end.getDate());
+        }
         setSelectedDays(newSelectedDays);
       } else {
         setSelectedDays([]);
@@ -207,22 +229,6 @@ export function MonthlyView() {
       document.removeEventListener('touchend', handleMouseUp)
     }
   }, [])
-
-  useEffect(() => {
-    if (isSelecting && selectedDays.length > 0) {
-      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
-      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
-
-      // Only update if the dates have actually changed
-      if (startDate.getTime() !== editingReservation?.dateStart?.getTime() ||
-        endDate.getTime() !== editingReservation?.dateEnd?.getTime()) {
-        updateEditingReservation({
-          dateStart: startDate,
-          dateEnd: endDate,
-        });
-      }
-    }
-  }, [selectedDays, isSelecting, currentDate, editingReservation]);
 
   return (
     <div className="h-full w-full md:max-w-[400px] p-4 flex flex-col">
@@ -250,7 +256,7 @@ export function MonthlyView() {
           <div
             key={day}
             className={`aspect-square flex items-center justify-center mb-1 text-sm
-              ${isWithinReservation(day) ? '-mx-[1px]' : ''}
+            
               ${isReservationStart(day) && isReservationEnd(day) ? 'border-2 border-primary rounded-full' :
                 isReservationStart(day) ? 'border-2 border-r-0 border-primary rounded-l-full' :
                   isReservationEnd(day) ? 'border-2 border-l-0 border-primary rounded-r-full' : ''}

@@ -4,6 +4,7 @@ import { useAuth } from './AuthProvider';
 import { getReservations, addReservation, updateReservation as updateReservationInFirestore } from '@/lib/firebase/firestore';
 import { Drawer } from "@/components/ui/drawer";
 import { AddItemForm } from "@/components/Reservation/AddItemForm";
+import { userSetting } from '@/lib/settings';
 
 export type EditingReservation = Partial<Reservation> | null;
 
@@ -64,6 +65,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
             console.log("null update")
             return updateFields;
         });
+        console.log(updateFields)
     }, []);
 
     const resetEditingReservation = useCallback(() => {
@@ -73,7 +75,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
             dateStart: new Date(),
             dateEnd: new Date(),
             comment: "",
-            numberOfPeople: 1,
+            numberOfPeople: userSetting.numberOfPeople,
             contact: [],
         });
     }, []);
@@ -101,6 +103,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
             const id = await addReservation(newReservation);
             const reservationWithId = { ...newReservation, id };
             setReservations(prevReservations => [...prevReservations, reservationWithId]);
+            resetEditingReservation();
         } catch (error) {
             console.error('Error adding new reservation:', error);
         }
