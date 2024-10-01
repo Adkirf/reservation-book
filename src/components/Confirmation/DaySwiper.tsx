@@ -1,83 +1,27 @@
 "use client"
 
-import { useRef, useState, useEffect, useCallback } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { format, addDays, startOfMonth, endOfMonth } from 'date-fns'
+import { useRef } from 'react'
+import { format } from 'date-fns'
 import { useSwipeable } from 'react-swipeable'
-
-const generateDateRange = (start: Date, end: Date) => {
-  const dates = []
-  let currentDate = start
-  while (currentDate <= end) {
-    dates.push(currentDate)
-    currentDate = addDays(currentDate, 1)
-  }
-  return dates
-}
-
-const startDate = startOfMonth(new Date())
-const endDate = endOfMonth(addDays(startDate, 180))
-const dateRange = generateDateRange(startDate, endDate)
-
-export default function DaySwiper({ onDateChange }: { onDateChange: (date: Date) => void }) {
+import { useReservation } from '@/contexts/ReservationProvider'
+import { Upload } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { ShareComponent } from './ShareComponent'
+export default function Component() {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [showLeftArrow, setShowLeftArrow] = useState(false)
-  const [showRightArrow, setShowRightArrow] = useState(true)
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [isSwipeInProgress, setIsSwipeInProgress] = useState(false)
-
-  const updateSelectedDate = useCallback(() => {
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current
-      const dayWidth = 80 // w-20 = 5rem = 80px
-      const middleIndex = Math.floor((scrollLeft + clientWidth / 2) / dayWidth)
-      const newSelectedDate = dateRange[middleIndex]
-      setSelectedDate(newSelectedDate)
-      onDateChange(newSelectedDate)
-    }
-  }, [onDateChange])
+  const { reservations } = useReservation()
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const scrollAmount = 80 // One day width
-      const targetScroll = scrollRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount)
-      scrollRef.current.scrollTo({
-        left: targetScroll,
+      const scrollAmount = 300
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
       })
     }
   }
 
-  const checkScroll = useCallback(() => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
-      setShowLeftArrow(scrollLeft > 0)
-      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1)
-    }
-  }, [])
-
-  useEffect(() => {
-    const scrollElement = scrollRef.current
-    if (scrollElement) {
-      const handleScroll = () => {
-        checkScroll()
-        if (!isSwipeInProgress) {
-          updateSelectedDate()
-        }
-      }
-      scrollElement.addEventListener('scroll', handleScroll)
-      checkScroll()
-      return () => scrollElement.removeEventListener('scroll', handleScroll)
-    }
-  }, [checkScroll, updateSelectedDate, isSwipeInProgress])
-
   const handlers = useSwipeable({
-    onSwipeStart: () => setIsSwipeInProgress(true),
-    onSwiped: () => {
-      setIsSwipeInProgress(false)
-      updateSelectedDate()
-    },
     onSwipedLeft: () => scroll('right'),
     onSwipedRight: () => scroll('left'),
     delta: 10,
@@ -85,49 +29,36 @@ export default function DaySwiper({ onDateChange }: { onDateChange: (date: Date)
   })
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
+    <div className="relative w-full max-w-3xl mx-auto">
       <div
         {...handlers}
         ref={scrollRef}
         className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory touch-pan-x"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {dateRange.map((date, index) => (
+        {reservations.map((reservation) => (
           <div
-            key={index}
-            className={`flex-none w-20 h-24 snap-center flex flex-col items-center justify-center border-r border-gray-200 last:border-r-0 ${format(selectedDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
-              ? 'bg-blue-100'
-              : ''
-              }`}
+            key={reservation.id}
+            className="flex-none w-72 h-40 snap-start flex flex-col items-start justify-center p-4 border border-gray-200 rounded-lg m-2 bg-white shadow-sm relative"
           >
-            <span className="text-sm font-medium text-gray-600">{format(date, 'EEE')}</span>
-            <span className="text-lg font-bold">{format(date, 'd')}</span>
-            <span className="text-xs text-gray-500">{format(date, 'MMM')}</span>
+            <div className='flex justify-between w-full'>
+              <h3 className="text-lg font-bold mb-2">{reservation.name}</h3>
+              <ShareComponent reservationId={reservation.id}>
+                <Upload className="h-5 w-5 text-gray-400 cursor-pointer" />
+              </ShareComponent>
+            </div>
+            <p className="text-sm text-gray-600 mb-1">
+              From: {format(new Date(reservation.dateStart), 'MMM d, yyyy')}
+            </p>
+            <p className="text-sm text-gray-600 mb-1">
+              To: {format(new Date(reservation.dateEnd), 'MMM d, yyyy')}
+            </p>
+            <p className="text-sm text-gray-600">
+              People: {reservation.numberOfPeople}
+            </p>
           </div>
         ))}
       </div>
-      {showLeftArrow && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md"
-          onClick={() => scroll('left')}
-        >
-          <ChevronLeft className="h-4 w-4" />
-          <span className="sr-only">Scroll left</span>
-        </Button>
-      )}
-      {showRightArrow && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md"
-          onClick={() => scroll('right')}
-        >
-          <ChevronRight className="h-4 w-4" />
-          <span className="sr-only">Scroll right</span>
-        </Button>
-      )}
     </div>
   )
 }

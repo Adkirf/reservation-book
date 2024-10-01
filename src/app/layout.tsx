@@ -12,6 +12,7 @@ import { ProtectedRoute } from '@/contexts/ProtectedRoute';
 import { usePathname } from 'next/navigation';
 import { ReservationProvider, useReservation } from '@/contexts/ReservationProvider'; // Update this import
 import { Drawer } from "@/components/ui/drawer";
+import { Toaster } from "@/components/ui/toaster";
 
 // Load custom fonts for the application
 const geistSans = localFont({
@@ -77,6 +78,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </main>
 
         <AddItemIcon />
+        <Toaster />
       </div>
     </div>
   );

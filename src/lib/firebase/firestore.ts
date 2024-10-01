@@ -135,3 +135,33 @@ export const getReservations = async (): Promise<Reservation[]> => {
 };
 
 
+
+/**
+ * Fetches a single reservation from Firestore by its ID
+ * @param id - The ID of the reservation to fetch
+ * @returns The Reservation object or null if not found
+ * @throws Error if the operation fails
+ */
+export const getReservationById = async (id: string): Promise<Reservation | null> => {
+    try {
+        const reservationRef = doc(db, 'reservations', id);
+        const reservationSnap = await getDoc(reservationRef);
+
+        if (reservationSnap.exists()) {
+            const data = reservationSnap.data();
+            return {
+                id: reservationSnap.id,
+                ...data,
+                dateStart: data.dateStart.toDate(),
+                dateEnd: data.dateEnd.toDate(),
+            } as Reservation;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error fetching reservation by ID:', error);
+        throw error;
+    }
+};
+
+

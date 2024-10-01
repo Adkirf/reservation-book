@@ -4,10 +4,16 @@ import { useState, useEffect, useRef, ReactNode } from 'react'
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
-import { toast } from "@/hooks/use-toast"
+// or
+import { useToast } from "@/hooks/use-toast"
 import { Copy, Mail, MessageCircle, MessageSquare, Share2 } from "lucide-react"
 
-export function ShareComponent({ children }: { children: ReactNode }) {
+interface ShareComponentProps {
+  children: ReactNode;
+  reservationId: string;
+}
+
+export function ShareComponent({ children, reservationId }: ShareComponentProps) {
   const [isClient, setIsClient] = useState(false)
   const [currentUrl, setCurrentUrl] = useState('')
   const [shortUrl, setShortUrl] = useState('')
@@ -15,10 +21,11 @@ export function ShareComponent({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setIsClient(true)
-    const url = window.location.href
+    const baseUrl = window.location.origin
+    const url = `${baseUrl}/confirmation/${reservationId}`
     setCurrentUrl(url)
-    setShortUrl(url.split('/').slice(0, 3).join('/') + '/...')
-  }, [])
+    setShortUrl(`${baseUrl}/...`)
+  }, [reservationId])
 
   const handleShare = (method: string) => {
     switch (method) {
@@ -34,12 +41,23 @@ export function ShareComponent({ children }: { children: ReactNode }) {
     }
   }
 
+  const { toast } = useToast()
+
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(currentUrl)
-    toast({
-      title: "Link copied to clipboard",
-      description: "You can now paste the link anywhere.",
-    })
+    try {
+      await navigator.clipboard.writeText(currentUrl)
+      toast({
+        title: "Link copied",
+        description: "The reservation link has been copied to your clipboard.",
+      })
+    } catch (err) {
+      console.error('Failed to copy: ', err)
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy the link. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   if (!isClient) return null
@@ -51,7 +69,7 @@ export function ShareComponent({ children }: { children: ReactNode }) {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-center">
-          <DrawerTitle>Share this page</DrawerTitle>
+          <DrawerTitle>Share this reservation</DrawerTitle>
         </DrawerHeader>
         <div className="flex flex-col items-center space-y-6 p-4">
           <div className="flex justify-center space-x-8 w-full">

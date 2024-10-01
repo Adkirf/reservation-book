@@ -20,7 +20,7 @@ export default function ConfirmationCard({
           <CardTitle className="text-2xl font-bold">
             {reservation.name}
           </CardTitle>
-          <ShareComponent>
+          <ShareComponent reservationId={reservation.id}>
             <Button variant="ghost" size="icon" className="h-8 w-8 flex justify-center items-center">
               <Upload className="h-5 w-5" />
               <span className="sr-only">Share</span>
