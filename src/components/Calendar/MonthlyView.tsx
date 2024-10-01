@@ -4,15 +4,18 @@ import { useState, useRef, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useReservation } from '@/contexts/ReservationProvider';
-import { Month, Months } from '@/lib/projectTypes';
+import { Month, Months, Reservation } from '@/lib/projectTypes';
 import { useSwipeable } from 'react-swipeable';
 import { userSetting } from '@/lib/settings';
+import { DayCell } from '@/components/Calendar/DayCell'; // New import
 
 export function MonthlyView() {
-  const { currentDate, isEditing, setCurrentDate, setIsEditing, updateEditingReservation, handleOpenDrawer, resetEditingReservation, editingReservation, getReservationsByMonth, setEditingReservation } = useReservation();
+  const { currentDate, isEditing, editingReservation, setCurrentDate, setIsEditing, updateEditingReservation, handleOpenDrawer, resetEditingReservation, setIntersectingArrivalHour, setIntersectingDepartureHour, getReservationsByMonth } = useReservation();
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [isSelecting, setIsSelecting] = useState(false)
   const [adjustingEnd, setAdjustingEnd] = useState<'start' | 'end' | null>(null);
+  const [isEndingMonthOfReservation, setIsEndingMonthOfReservation] = useState(false)
+  const [isStartingMonthOfReservation, setIsStartingMonthOfReservation] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
@@ -23,24 +26,27 @@ export function MonthlyView() {
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
   const emptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => i)
 
-  const isToday = (day: number) => {
-    const today = new Date()
-    return (
-      day === today.getDate() &&
-      currentDate.getMonth() === today.getMonth() &&
-      currentDate.getFullYear() === today.getFullYear()
-    )
+
+
+  const nextMonth = async () => {
+    const firstDayNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+    if (selectedDays.includes(daysInMonth)) {
+      await setSelectedDays([1])
+      await setIsEndingMonthOfReservation(true)
+      await setIsStartingMonthOfReservation(false)
+    }
+    setCurrentDate(firstDayNextMonth)
   }
 
+  const prevMonth = async () => {
+    const lastDayLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0)
+    if (selectedDays.includes(1)) {
+      await setSelectedDays([lastDayLastMonth.getDate()])
+      await setIsEndingMonthOfReservation(false)
+      await setIsStartingMonthOfReservation(true)
+    }
+    setCurrentDate(lastDayLastMonth)
 
-  const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
-    setSelectedDays([])
-  }
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
-    setSelectedDays([])
   }
 
   const handlers = useSwipeable({
@@ -51,6 +57,31 @@ export function MonthlyView() {
     trackMouse: true
   });
 
+  const checkOverlappingReservation = (newSelection: number[]) => {
+    return currentMonthReservations.find(reservation => {
+      const reservationStart = new Date(reservation.dateStart).getDate();
+      const reservationEnd = new Date(reservation.dateEnd).getDate();
+      return (newSelection[0] <= reservationEnd && newSelection[newSelection.length - 1] >= reservationStart);
+    });
+  };
+
+  const handleOverlap = (overlappingReservation: Reservation, newSelection: number[]) => {
+    const reservationStart = new Date(overlappingReservation.dateStart);
+    const reservationEnd = new Date(overlappingReservation.dateEnd);
+
+    if (newSelection[0] === reservationEnd.getDate() || newSelection[newSelection.length - 1] === reservationStart.getDate()) {
+      console.log("IIIINTNNTNERRRRSSSEEECCCTIONN");
+      if (newSelection[0] === reservationEnd.getDate()) {
+        setIntersectingDepartureHour(reservationEnd.getHours());
+      } else {
+        setIntersectingArrivalHour(reservationStart.getHours());
+      }
+      return newSelection;
+    }
+
+    return null;
+  };
+
 
   const handleDayClick = (day: number, event: React.MouseEvent | React.TouchEvent) => {
     // For mouse events, prevent default behavior
@@ -58,14 +89,26 @@ export function MonthlyView() {
       event.preventDefault();
     }
 
+    // returns the reservation that was clicked 
     const reservationOnDay = currentMonthReservations.find(reservation => {
-      const startDate = new Date(reservation.dateStart);
-      const endDate = new Date(reservation.dateEnd);
+      const startDate = new Date(Math.max(reservation.dateStart.getTime(), new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getTime()));
+      const endDate = new Date(Math.min(reservation.dateEnd.getTime(), new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getTime()));
+
+
       return day >= startDate.getDate() && day <= endDate.getDate();
     });
 
     if (reservationOnDay) {
-      setEditingReservation(reservationOnDay);
+      if (reservationOnDay.dateStart.getMonth() < currentDate.getMonth()) {
+        setIsEndingMonthOfReservation(true)
+        setIsStartingMonthOfReservation(false)
+      }
+      if (reservationOnDay.dateEnd.getMonth() > currentDate.getMonth()) {
+        setIsEndingMonthOfReservation(false)
+        setIsStartingMonthOfReservation(true)
+      }
+      updateEditingReservation(reservationOnDay);
+
       if (!isEditing) {
         handleOpenDrawer();
       } else {
@@ -85,8 +128,8 @@ export function MonthlyView() {
     });
 
     if (isEditing && editingReservation) {
-      const startDay = editingReservation.dateStart?.getDate();
-      const endDay = editingReservation.dateEnd?.getDate();
+      const startDay = editingReservation.dateStart!.getDate();
+      const endDay = editingReservation.dateEnd!.getDate();
 
       if (day === startDay) {
         setAdjustingEnd('start');
@@ -123,11 +166,25 @@ export function MonthlyView() {
       const endDate = new Date(selectedDate);
       endDate.setDate(endDate.getDate() + 1);
       endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
+
       resetEditingReservation();
       updateEditingReservation({
         dateStart: startDate,
         dateEnd: endDate,
       });
+      const newSelection = [startDate.getDate(), endDate.getDate()];
+      const overlappingReservation = checkOverlappingReservation(newSelection);
+
+      if (overlappingReservation) {
+        const result = handleOverlap(overlappingReservation, newSelection);
+        if (result === null) {
+          return;
+        }
+        return;
+      }
+
+      setIntersectingArrivalHour(null);
+      setIntersectingDepartureHour(null);
     }
   }
 
@@ -140,8 +197,16 @@ export function MonthlyView() {
         let lastSelected = prevSelected[prevSelected.length - 1];
 
         if (isEditing) {
-          firstSelected = editingReservation?.dateStart?.getDate() || 0;
-          lastSelected = editingReservation?.dateEnd?.getDate() || 0;
+          firstSelected = editingReservation.dateStart!.getDate();
+          lastSelected = editingReservation.dateEnd!.getDate();
+          if (isEndingMonthOfReservation) {
+            firstSelected = 0;
+            lastSelected = editingReservation.dateEnd!.getDate();
+          }
+          if (isStartingMonthOfReservation) {
+            firstSelected = editingReservation.dateStart!.getDate();
+            lastSelected = daysInMonth;
+          }
         }
 
         let newSelection: number[];
@@ -161,12 +226,22 @@ export function MonthlyView() {
           }
         }
 
-        // Filter out days that are within existing reservations
-        // but allow the original start and end dates of the editing reservation
-        newSelection = newSelection.filter(d =>
-          !isWithinReservation(d) ||
-          (isEditing && (d === firstSelected || d === lastSelected || d === day))
-        );
+
+
+
+        const overlappingReservation = checkOverlappingReservation(newSelection);
+
+        if (overlappingReservation) {
+          const result = handleOverlap(overlappingReservation, newSelection);
+          console.log("OOOOOVOOVOVOVOOV")
+          if (result === null) {
+            return prevSelected;
+          }
+          return result;
+        }
+
+        setIntersectingArrivalHour(null);
+        setIntersectingDepartureHour(null);
 
         return newSelection;
       });
@@ -177,14 +252,19 @@ export function MonthlyView() {
     setIsSelecting(false);
     setAdjustingEnd(null);
     if (selectedDays.length > 0) {
-      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
-      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
 
-      // Set the start date to the check-in hour
+      let startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
       startDate.setHours(userSetting.checkInHour, 0, 0, 0);
-
-      // Set the end date to the check-out hour of the day after the last selected day
+      let endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
       endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
+
+      if (isEndingMonthOfReservation) {
+        startDate = editingReservation.dateStart!
+      }
+
+      if (isStartingMonthOfReservation) {
+        endDate = editingReservation.dateEnd!
+      }
 
       updateEditingReservation({
         dateStart: startDate,
@@ -207,6 +287,7 @@ export function MonthlyView() {
 
 
   const isReservationStart = (day: number) => {
+
     return currentMonthReservations.some(reservation => {
       const startDate = new Date(reservation.dateStart);
       return startDate.getDate() === day && startDate.getMonth() === currentDate.getMonth();
@@ -214,6 +295,7 @@ export function MonthlyView() {
   }
 
   const isReservationEnd = (day: number) => {
+
     return currentMonthReservations.some(reservation => {
       const endDate = new Date(reservation.dateEnd);
       return endDate.getDate() === day && endDate.getMonth() === currentDate.getMonth();
@@ -234,22 +316,52 @@ export function MonthlyView() {
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
+
+
   useEffect(() => {
-    if (editingReservation?.dateStart && editingReservation?.dateEnd) {
+    if (editingReservation.dateStart && editingReservation.dateEnd) {
       const start = new Date(editingReservation.dateStart);
       const end = new Date(editingReservation.dateEnd);
-      if (start.getMonth() === currentDate.getMonth() && start.getFullYear() === currentDate.getFullYear()) {
+      const currentMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const currentMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      currentMonthEnd.setHours(23, 59, 59, 999);
+
+      //Includes reservations and existing edits that span
+      if (start <= currentMonthEnd && end >= currentMonthStart) {
         const newSelectedDays = [];
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          newSelectedDays.push(d.getDate());
+        const rangeStart = start < currentMonthStart ? currentMonthStart : start;
+        const rangeEnd = end > currentMonthEnd ? currentMonthEnd : end;
+
+        for (let d = new Date(rangeStart); d <= rangeEnd; d.setDate(d.getDate() + 1)) {
+          if (d.getMonth() === currentDate.getMonth()) {
+            newSelectedDays.push(d.getDate());
+          }
         }
-        // Include the end date
-        if (end.getMonth() === currentDate.getMonth() && end.getFullYear() === currentDate.getFullYear()) {
-          newSelectedDays.push(end.getDate());
+
+        // Ensure the last day of the reservation in this month is selected
+        const lastDayInMonth = end > currentMonthEnd ? currentMonthEnd.getDate() : end.getDate();
+        if (!newSelectedDays.includes(lastDayInMonth)) {
+          newSelectedDays.push(lastDayInMonth);
         }
         setSelectedDays(newSelectedDays);
-      } else {
-        setSelectedDays([]);
+        setIsEndingMonthOfReservation(editingReservation.dateEnd > currentMonthStart && editingReservation.dateStart < currentMonthStart);
+        setIsStartingMonthOfReservation(editingReservation.dateStart < currentMonthEnd && editingReservation.dateEnd > currentMonthEnd);
+
+      }
+      //Includes edits that should start/end to span
+      //Is exlusively triggered by next/prev month
+      else {
+        if (isEndingMonthOfReservation) {
+          updateEditingReservation({
+            dateEnd: new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0], userSetting.checkOutHour, 0, 0, 0),
+          });
+        }
+        if (isStartingMonthOfReservation) {
+          updateEditingReservation({
+            dateStart: new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0], userSetting.checkInHour, 0, 0, 0),
+          });
+        }
+        setSelectedDays([])
       }
     }
   }, [editingReservation, currentDate]);
@@ -287,46 +399,22 @@ export function MonthlyView() {
           <div key={`empty-${index}`} className="aspect-square"></div>
         ))}
         {days.map((day) => (
-          <div
+          <DayCell
             key={day}
-            className={`aspect-square flex items-center justify-center mb-1 text-sm
-            
-              ${isReservationStart(day) && isReservationEnd(day) ? 'border-2 border-primary rounded-full' :
-                isReservationStart(day) ? 'border-2 border-r-0 border-primary rounded-l-full' :
-                  isReservationEnd(day) ? 'border-2 border-l-0 border-primary rounded-r-full' : ''}
-              ${isWithinReservation(day) && !isReservationStart(day) && !isReservationEnd(day) ? 'border-t-2 border-b-2 border-primary' : ''}
-              ${selectedDays.includes(day) ?
-                (isFirstSelected(day) || isLastSelected(day) ?
-                  `bg-primary ${isFirstSelected(day) ? 'rounded-l-full' : ''} ${isLastSelected(day) ? 'rounded-r-full' : ''} text-primary-foreground` :
-                  'bg-gray-300 rounded text-gray-800'
-                ) :
-                'hover:bg-muted'
-              }
-            `}
-            onClick={(e) => handleDayClick(day, e)}
-            onMouseDown={(e) => {
-              e.preventDefault(); // Prevent text selection
-              handleDayInteractionStart(day);
-            }}
-            onMouseEnter={() => handleDayInteractionMove(day)}
-            onMouseUp={handleDayInteractionEnd}
-            onTouchStart={(e) => {
-              handleDayClick(day, e);
-            }}
-            onTouchMove={(e) => {
-              const touch = e.touches[0]
-              const element = document.elementFromPoint(touch.clientX, touch.clientY)
-              const dayElement = element?.closest('[data-day]')
-              if (dayElement) {
-                const touchedDay = parseInt(dayElement.getAttribute('data-day') || '0', 10)
-                handleDayInteractionMove(touchedDay)
-              }
-            }}
-            onTouchEnd={handleDayInteractionEnd}
-            data-day={day}
-          >
-            <span className="w-full h-full flex items-center justify-center">{day}</span>
-          </div>
+            day={day}
+            isEndingMonthOfReservation={isEndingMonthOfReservation}
+            isStartingMonthOfReservation={isStartingMonthOfReservation}
+            isSelected={selectedDays.includes(day)}
+            isFirstSelected={isFirstSelected(day)}
+            isLastSelected={isLastSelected(day)}
+            isReservationStart={isReservationStart(day)}
+            isReservationEnd={isReservationEnd(day)}
+            isWithinReservation={isWithinReservation(day)}
+            onDayClick={handleDayClick}
+            onDayInteractionStart={handleDayInteractionStart}
+            onDayInteractionMove={handleDayInteractionMove}
+            onDayInteractionEnd={handleDayInteractionEnd}
+          />
         ))}
       </div>
       <div

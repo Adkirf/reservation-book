@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { X, ChevronLeft, ChevronRight, Calendar, Clock, User, FileText, MapPin } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Calendar, Clock, User, FileText, MapPin, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,9 +10,10 @@ import { useReservation } from "@/contexts/ReservationProvider"
 import { Reservation } from "@/lib/projectTypes"
 import { DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer"
 import { HourRangePickerComponent } from "@/components/FormInputs/HourRangePicker"
-import DateRangePicker from "@/components/FormInputs/DayRangePicker"
+import DayRangePicker from "@/components/FormInputs/DayRangePicker"
 import { DateRange } from "react-day-picker"
 import { NumberInput } from "@/components/FormInputs/NumberInput"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 interface AddItemFormProps {
   onClose: () => void;
@@ -26,16 +27,11 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
     updateReservation,
     updateEditingReservation,
     resetEditingReservation,
-    setCurrentDate,
+    resetChanges,
     setIsEditing,
-    reservations, // Add this to get access to the original reservations
+    reservations,
+    deleteReservation,
   } = useReservation()
-
-  useEffect(() => {
-    if (!editingReservation) {
-      resetEditingReservation();
-    }
-  }, [editingReservation, resetEditingReservation]);
 
   const [page, setPage] = useState(initialPage)
   const [validity, setValidity] = useState<Record<keyof Reservation, "valid" | "invalid" | "empty">>({
@@ -48,9 +44,14 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
     contact: "empty",
   })
   const [changedFields, setChangedFields] = useState<Set<keyof Reservation>>(new Set())
-  const [hasChanges, setHasChanges] = useState(false)
 
   const isEditing = !!editingReservation?.id
+
+  useEffect(() => {
+    if (!editingReservation) {
+      resetEditingReservation();
+    }
+  }, [editingReservation, resetEditingReservation]);
 
   useEffect(() => {
     if (editingReservation) {
@@ -60,14 +61,31 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
         newValidity[typedKey] = validateField(typedKey, editingReservation[typedKey])
       })
       setValidity(newValidity)
+
+      // Compare editingReservation with the original reservation
+      if (isEditing) {
+        const originalReservation = reservations.find(r => r.id === editingReservation.id)
+        if (originalReservation) {
+          const newChangedFields = new Set<keyof Reservation>()
+          Object.keys(editingReservation).forEach((key) => {
+            const typedKey = key as keyof Reservation
+            if (JSON.stringify(editingReservation[typedKey]) !== JSON.stringify(originalReservation[typedKey])) {
+              newChangedFields.add(typedKey)
+            }
+          })
+          setChangedFields(newChangedFields)
+        }
+      } else {
+        // If it's a new reservation, all fields are considered changed
+        setChangedFields(new Set(Object.keys(editingReservation) as (keyof Reservation)[]))
+      }
     }
-    // Set the initial page
-    setPage(initialPage)
-  }, [editingReservation, initialPage])
+
+  }, [editingReservation, initialPage, isEditing, reservations])
 
   useEffect(() => {
-    setHasChanges(changedFields.size > 0)
-  }, [changedFields])
+    setPage(initialPage)
+  }, [initialPage])
 
   const validateField = (field: keyof Reservation, value: any): "valid" | "invalid" | "empty" => {
     if (value === "" || value === null) return "empty"
@@ -112,22 +130,27 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
     updateEditingReservation({ [field]: value });
 
     if (isEditing) {
-      if (JSON.stringify(editingReservation?.[field]) !== JSON.stringify(value)) {
-        setChangedFields(prev => new Set(prev).add(field))
-      } else {
-        setChangedFields(prev => {
-          const newSet = new Set(prev)
-          newSet.delete(field)
-          return newSet
-        })
+      const originalReservation = reservations.find(r => r.id === editingReservation?.id)
+      if (originalReservation) {
+        if (JSON.stringify(originalReservation[field]) !== JSON.stringify(value)) {
+          setChangedFields(prev => new Set(prev).add(field))
+        } else {
+          setChangedFields(prev => {
+            const newSet = new Set(prev)
+            newSet.delete(field)
+            return newSet
+          })
+        }
       }
+    } else {
+      // For new reservations, always consider fields as changed
+      setChangedFields(prev => new Set(prev).add(field))
     }
 
     const newValidity = { ...validity }
     newValidity[field] = validateField(field, value)
     setValidity(newValidity)
   }
-
 
   const handleHourRangeChange = (hourRange: [Date, Date]) => {
     const [newStart, newEnd] = hourRange
@@ -145,9 +168,24 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
   }
 
   const handleClose = () => {
-    setCurrentDate(editingReservation?.dateStart || new Date())
-    setIsEditing(true)
+    resetChanges()
+    if (editingReservation.id) {
+
+      setIsEditing(true)
+    }
     onClose()
+  }
+
+  const handleDeleteReservation = async () => {
+    if (editingReservation?.id) {
+      try {
+        await deleteReservation(editingReservation.id);
+        onClose();
+      } catch (error) {
+        console.error('Error deleting reservation:', error);
+        alert("An error occurred while deleting the reservation. Please try again.");
+      }
+    }
   }
 
   const pages = [
@@ -189,13 +227,12 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
           <div>
             <Label>Time Range</Label>
             <HourRangePickerComponent
-              currentHourRange={editingReservation?.dateStart && editingReservation?.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date()]}
               onHourRangeChange={handleHourRangeChange}
             />
           </div>
           <div>
             <Label>Date Range</Label>
-            <DateRangePicker
+            <DayRangePicker
               currentDateRange={editingReservation?.dateStart && editingReservation?.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]}
               onClose={handleClose}
             />
@@ -232,17 +269,6 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
     },
   ]
 
-  // Add this function to check if the editingReservation has changes
-  const hasReservationChanges = () => {
-    if (!editingReservation || !editingReservation.id) return false;
-    const originalReservation = reservations.find(r => r.id === editingReservation.id);
-    if (!originalReservation) return false;
-
-    return ['name', 'dateStart', 'dateEnd', 'comment', 'numberOfPeople', 'contact'].some(field => {
-      const key = field as keyof Reservation;
-      return JSON.stringify(editingReservation[key]) !== JSON.stringify(originalReservation[key]);
-    });
-  };
 
   // Update the getPageColor function
   const getPageColor = (pageIndex: number) => {
@@ -258,10 +284,7 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
 
     if (pageValidity.every((v) => v === "valid")) {
       if (isEditing && editingReservation?.id) {
-        const hasChangedField = pageFields.some(field => {
-          const key = field as keyof Reservation;
-          return JSON.stringify(editingReservation?.[key]) !== JSON.stringify(reservations.find(r => r.id === editingReservation.id)?.[key]);
-        });
+        const hasChangedField = pageFields.some(field => changedFields.has(field as keyof Reservation));
         return hasChangedField ? "bg-yellow-500" : "bg-green-500"
       }
       return "bg-green-500"
@@ -273,7 +296,32 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
     <DrawerContent>
       <DrawerHeader>
         <DrawerTitle>{isEditing ? "Edit Reservation" : "Add New Reservation"}</DrawerTitle>
-        <DrawerDescription>{pages[page].title}</DrawerDescription>
+        <DrawerDescription className="flex justify-between items-center">
+          <span>{pages[page].title}</span>
+          {isEditing && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Delete Reservation">
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the reservation.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteReservation}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </DrawerDescription>
       </DrawerHeader>
       <div className="p-4 pb-0">
         {editingReservation && (
@@ -302,7 +350,7 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
             <span className="sr-only">Previous page</span>
           </Button>
           {page === pages.length - 1 ? (
-            <Button onClick={handleSubmit} disabled={isEditing && !hasChanges}>
+            <Button onClick={handleSubmit} disabled={isEditing && changedFields.size === 0}>
               Submit
             </Button>
           ) : (

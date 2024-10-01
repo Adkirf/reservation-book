@@ -48,7 +48,7 @@ function capitalizeFirstLetter(string: string): string {
  */
 export default function ReservationTable({ reservations, visibleColumns, searchQuery, setSearchQuery, toggleColumn }: ReservationTableProps) {
     const { sortConfig, requestSort, formatDateRange } = useReservationFilters(reservations);
-    const { setEditingReservation, handleOpenDrawer } = useReservation();
+    const { updateEditingReservation, handleOpenDrawer } = useReservation();
 
     const formatCellValue = (value: any, column: string): string => {
         if (value === null || value === undefined) return '';
@@ -65,7 +65,7 @@ export default function ReservationTable({ reservations, visibleColumns, searchQ
     };
 
     const handleRowClick = (reservation: Reservation) => {
-        setEditingReservation(reservation);
+        updateEditingReservation(reservation);
         handleOpenDrawer();
     };
 

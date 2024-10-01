@@ -8,16 +8,15 @@ import { DateRange } from "react-day-picker"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DayRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
     currentDateRange: [Date, Date]
-    onDateRangeChange: (dateRange: DateRange) => void
     onClose: () => void
 }
 
-export default function DateRangePicker({
+export default function DayRangePicker({
     currentDateRange,
     onClose,
-}: DateRangePickerProps) {
+}: DayRangePickerProps) {
     const formatDate = (date: Date | undefined) => {
         if (!date || isNaN(date.getTime())) {
             return "Pick a date"

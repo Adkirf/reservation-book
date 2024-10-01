@@ -4,11 +4,26 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Clock, ChevronRight, Home } from 'lucide-react'
+import { useReservation } from '@/contexts/ReservationProvider'
 
 type Step = 'arrival' | 'departure'
 
-const HourPicker = ({ value, onChange }: { value: number, onChange: (hour: number) => void }) => {
+const HourPicker = ({ value, onChange, intersectingHour, currentStep }: {
+  value: number,
+  onChange: (hour: number) => void,
+  intersectingHour: number | null,
+  currentStep: Step
+}) => {
   const hours = Array.from({ length: 24 }, (_, i) => i)
+
+  const isDisabled = (hour: number) => {
+    if (currentStep === 'arrival' && intersectingHour !== null) {
+      return hour <= intersectingHour;
+    } else if (currentStep === 'departure' && intersectingHour !== null) {
+      return hour >= intersectingHour;
+    }
+    return false;
+  }
 
   return (
     <div className="grid grid-cols-6 gap-1">
@@ -16,8 +31,11 @@ const HourPicker = ({ value, onChange }: { value: number, onChange: (hour: numbe
         <Button
           key={hour}
           variant="outline"
-          className={`p-1 text-xs ${value === hour ? 'bg-primary text-primary-foreground' : ''}`}
+          className={`p-1 text-xs ${value === hour ? 'bg-primary text-primary-foreground' :
+            isDisabled(hour) ? 'bg-gray-100 text-gray-400' : ''
+            }`}
           onClick={() => onChange(hour)}
+          disabled={isDisabled(hour)}
         >
           {hour.toString().padStart(2, '0')}
         </Button>
@@ -39,19 +57,19 @@ const Breadcrumbs = ({ currentStep }: { currentStep: Step }) => {
 }
 
 interface HourRangePickerProps {
-  currentHourRange: [Date, Date];
   onHourRangeChange: (dateRange: [Date, Date]) => void;
 }
 
-export function HourRangePickerComponent({ currentHourRange, onHourRangeChange }: HourRangePickerProps) {
+export function HourRangePickerComponent({ onHourRangeChange }: HourRangePickerProps) {
+  const { editingReservation, updateEditingReservation, intersectingArrivalHour, intersectingDepartureHour } = useReservation()
   const [arrival, setArrival] = useState<number>(() => {
-    return currentHourRange[0] instanceof Date && !isNaN(currentHourRange[0].getTime())
-      ? currentHourRange[0].getHours()
+    return editingReservation.dateStart instanceof Date && !isNaN(editingReservation.dateStart.getTime())
+      ? editingReservation.dateStart.getHours()
       : new Date().getHours()
   })
   const [departure, setDeparture] = useState<number>(() => {
-    return currentHourRange[1] instanceof Date && !isNaN(currentHourRange[1].getTime())
-      ? currentHourRange[1].getHours()
+    return editingReservation.dateEnd instanceof Date && !isNaN(editingReservation.dateEnd.getTime())
+      ? editingReservation.dateEnd.getHours()
       : new Date().getHours() + 1
   })
   const [isOpen, setIsOpen] = useState(false)
@@ -60,12 +78,12 @@ export function HourRangePickerComponent({ currentHourRange, onHourRangeChange }
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    if (currentHourRange[0] instanceof Date && !isNaN(currentHourRange[0].getTime()) &&
-      currentHourRange[1] instanceof Date && !isNaN(currentHourRange[1].getTime())) {
-      setArrival(currentHourRange[0].getHours())
-      setDeparture(currentHourRange[1].getHours())
+    if (editingReservation.dateStart instanceof Date && !isNaN(editingReservation.dateStart.getTime()) &&
+      editingReservation.dateEnd instanceof Date && !isNaN(editingReservation.dateEnd.getTime())) {
+      setArrival(editingReservation.dateStart.getHours())
+      setDeparture(editingReservation.dateEnd.getHours())
     }
-  }, [currentHourRange])
+  }, [editingReservation])
 
   useEffect(() => {
     const updateWidth = () => {
@@ -98,12 +116,16 @@ export function HourRangePickerComponent({ currentHourRange, onHourRangeChange }
   }
 
   const updateDateRange = (newArrival: number, newDeparture: number) => {
-    const updatedArrival = new Date(currentHourRange[0])
+    const updatedArrival = new Date(editingReservation.dateStart || new Date())
     updatedArrival.setHours(newArrival, 0, 0, 0)
 
-    const updatedDeparture = new Date(currentHourRange[1])
+    const updatedDeparture = new Date(editingReservation.dateEnd || new Date())
     updatedDeparture.setHours(newDeparture, 0, 0, 0)
 
+    updateEditingReservation({
+      dateStart: updatedArrival,
+      dateEnd: updatedDeparture
+    })
     onHourRangeChange([updatedArrival, updatedDeparture])
   }
 
@@ -136,18 +158,23 @@ export function HourRangePickerComponent({ currentHourRange, onHourRangeChange }
           {currentStep === 'arrival' ? (
             <div>
               <h4 className="font-medium text-sm mb-1">Select Arrival Hour</h4>
-              <HourPicker value={arrival} onChange={handleArrivalChange} />
+              <HourPicker
+                value={arrival}
+                onChange={handleArrivalChange}
+                intersectingHour={intersectingDepartureHour}
+                currentStep={currentStep}
+              />
             </div>
           ) : (
             <div>
               <h4 className="font-medium text-sm mb-1">Select Departure Hour</h4>
-              <HourPicker value={departure} onChange={handleDepartureChange} />
+              <HourPicker
+                value={departure}
+                onChange={handleDepartureChange}
+                intersectingHour={intersectingArrivalHour}
+                currentStep={currentStep}
+              />
             </div>
-          )}
-          {currentStep === 'departure' && (
-            <Button className="w-full text-sm" onClick={() => setIsOpen(false)}>
-              Set Time Range
-            </Button>
           )}
         </div>
       </PopoverContent>

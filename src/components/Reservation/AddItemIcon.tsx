@@ -15,7 +15,7 @@ export function AddItemIcon() {
             resetEditingReservation();
             handleOpenDrawer();
         }
-
+        handleOpenDrawer();
 
 
     };

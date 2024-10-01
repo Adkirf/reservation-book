@@ -1,17 +1,17 @@
-import { Reservation, Month, Months } from '@/lib/projectTypes';
+import { Reservation, Month, Months, EditingReservation } from '@/lib/projectTypes';
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
-import { getReservations, addReservation, updateReservation as updateReservationInFirestore } from '@/lib/firebase/firestore';
+import { deleteReservation as deleteReservationInFirestore, getReservations, addReservation, updateReservation as updateReservationInFirestore } from '@/lib/firebase/firestore';
 import { Drawer } from "@/components/ui/drawer";
 import { AddItemForm } from "@/components/Reservation/AddItemForm";
 import { userSetting } from '@/lib/settings';
-
-export type EditingReservation = Partial<Reservation> | null;
 
 // Define the shape of the reservation context
 export interface ReservationContextType {
     reservations: Reservation[];
     currentDate: Date;
+    intersectingArrivalHour: number | null;
+    intersectingDepartureHour: number | null;
     isEditing: boolean;
     editingReservation: EditingReservation;
     isLoading: boolean;
@@ -19,13 +19,16 @@ export interface ReservationContextType {
     setReservations: React.Dispatch<React.SetStateAction<Reservation[]>>;
     setCurrentDate: React.Dispatch<React.SetStateAction<Date>>;
     setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-    setEditingReservation: (reservation: EditingReservation) => void;
+    setIntersectingArrivalHour: React.Dispatch<React.SetStateAction<number | null>>;
+    setIntersectingDepartureHour: React.Dispatch<React.SetStateAction<number | null>>;
     updateEditingReservation: (updateFields: Partial<Reservation>) => void;
     addNewReservation: (reservation: Omit<Reservation, 'id'>) => Promise<void>;
     updateReservation: (id: string, data: Partial<Reservation>) => Promise<void>;
+    deleteReservation: (id: string) => Promise<void>;
     handleOpenDrawer: (initialPage?: number) => void; // Updated type
     handleCloseDrawer: () => void;
-    resetEditingReservation: () => void; // Add this new function
+    resetEditingReservation: () => void;
+    resetChanges: () => void;
     fetchAllReservations: () => Promise<void>;
     getReservationsByMonth: (month: Month, year: number) => Reservation[];
 }
@@ -55,9 +58,18 @@ interface ReservationProviderProps {
  */
 export const ReservationProvider: React.FC<ReservationProviderProps> = ({ children }) => {
     const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [intersectingArrivalHour, setIntersectingArrivalHour] = useState<number | null>(null);
+    const [intersectingDepartureHour, setIntersectingDepartureHour] = useState<number | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date())
     const [isEditing, setIsEditing] = useState(false)
-    const [editingReservation, setEditingReservation] = useState<EditingReservation>(null);
+    const [editingReservation, setEditingReservation] = useState<EditingReservation>({
+        name: "",
+        dateStart: new Date(),
+        dateEnd: new Date(),
+        comment: "",
+        numberOfPeople: userSetting.numberOfPeople,
+        contact: [],
+    });
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
     const [initialDrawerPage, setInitialDrawerPage] = useState<number>(0);
@@ -65,14 +77,10 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
     const { user } = useAuth();
 
     const updateEditingReservation = useCallback((updateFields: Partial<Reservation>) => {
+        console.log("updateEditingReservation", updateFields)
         setEditingReservation((prev) => {
-            if (prev) {
-                return { ...prev, ...updateFields };
-            }
-            console.log("null update")
-            return updateFields;
+            return { ...prev, ...updateFields };
         });
-        console.log(updateFields)
     }, []);
 
     const resetEditingReservation = useCallback(() => {
@@ -86,6 +94,20 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
             contact: [],
         });
     }, []);
+
+    const resetChanges = useCallback(() => {
+        console.log("resetting changes");
+        if (editingReservation.id) {
+            const originalReservation = reservations.find(r => r.id === editingReservation.id);
+            if (originalReservation) {
+                setEditingReservation(originalReservation);
+            } else {
+                console.error("Original reservation not found");
+            }
+        } else {
+            console.log("No editing reservation id found");
+        }
+    }, [editingReservation.id, reservations]);
 
     const fetchAllReservations = useCallback(async () => {
         setIsLoading(true);
@@ -110,7 +132,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
             const id = await addReservation(newReservation);
             const reservationWithId = { ...newReservation, id };
             setReservations(prevReservations => [...prevReservations, reservationWithId]);
-            resetEditingReservation();
+
         } catch (error) {
             console.error('Error adding new reservation:', error);
         }
@@ -136,6 +158,18 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         setIsDrawerOpen(true);
     }, []);
 
+    const deleteReservation = useCallback(async (id: string) => {
+        try {
+            await deleteReservationInFirestore(id);
+            setReservations((prevReservations) =>
+                prevReservations.filter((reservation) => reservation.id !== id)
+            );
+        } catch (error) {
+            console.error('Error deleting reservation:', error);
+            throw error;
+        }
+    }, []);
+
     const handleCloseDrawer = useCallback(() => {
 
         setIsDrawerOpen(false);
@@ -143,9 +177,18 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
 
     const getReservationsByMonth = useCallback((month: Month, year: number) => {
         const monthIndex = Months.indexOf(month);
+        const monthStart = new Date(year, monthIndex, 1);
+        const monthEnd = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
+
         return reservations.filter(reservation => {
-            const reservationDate = new Date(reservation.dateStart);
-            return reservationDate.getMonth() === monthIndex && reservationDate.getFullYear() === year;
+            const reservationStart = new Date(reservation.dateStart);
+            const reservationEnd = new Date(reservation.dateEnd);
+
+            return (
+                (reservationStart >= monthStart && reservationStart <= monthEnd) ||
+                (reservationEnd >= monthStart && reservationEnd <= monthEnd) ||
+                (reservationStart <= monthStart && reservationEnd >= monthEnd)
+            );
         });
     }, [reservations]);
 
@@ -156,17 +199,22 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         isDrawerOpen,
         currentDate,
         isEditing,
+        intersectingArrivalHour,
+        intersectingDepartureHour,
         setReservations,
-        setEditingReservation,
         setCurrentDate,
+        setIntersectingArrivalHour,
+        setIntersectingDepartureHour,
         setIsEditing,
         updateEditingReservation,
         fetchAllReservations,
         addNewReservation,
         updateReservation,
+        deleteReservation,
         handleOpenDrawer,
         handleCloseDrawer,
         resetEditingReservation,
+        resetChanges,
         getReservationsByMonth,
     }), [
         reservations,
@@ -186,6 +234,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         handleOpenDrawer,
         handleCloseDrawer,
         resetEditingReservation,
+        resetChanges,
         getReservationsByMonth,
     ]);
 

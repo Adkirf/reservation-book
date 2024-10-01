@@ -35,13 +35,16 @@ export interface ChatMessage {
 
 // Tasks are created by admins and assigned to users
 // Tasks are only visible 
-export type Reservation = {
-    id: string;
+export interface EditingReservation {
+    id?: string;
     name: string;
     dateStart: Date;
     dateEnd: Date;
     comment: string;
     numberOfPeople: number;
     contact: string[];
-    // Remove reference field
+}
+
+export interface Reservation extends EditingReservation {
+    id: string;
 }
