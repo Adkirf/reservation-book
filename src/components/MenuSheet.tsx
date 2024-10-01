@@ -5,6 +5,7 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
+  SheetTitle
 } from "@/components/ui/sheet"
 import { PanelLeft, Package2, Home, Calendar, Book, HelpCircle, Settings } from "lucide-react"
 import Link from "next/link"
@@ -12,6 +13,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthProvider"
 import { signOut } from "@/lib/firebase/auth";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 
 // Define menu items with their respective icons and routes
 const menuItems = [
@@ -88,6 +90,9 @@ export function MenuSheetComponent() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="sm:max-w-xs flex flex-col">
+        <SheetTitle className="hidden">
+          Menu
+        </SheetTitle>
         <MenuContent />
       </SheetContent>
     </Sheet>

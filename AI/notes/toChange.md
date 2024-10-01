@@ -1,0 +1,3 @@
+- When clicking on DatePicker when calendar section close drawer, when not calendar navigate to calendar and start dat for month
+- Remove sorting for MVP
+- Remove Admin for MVP

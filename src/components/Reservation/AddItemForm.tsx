@@ -14,6 +14,7 @@ import DayRangePicker from "@/components/FormInputs/DayRangePicker"
 import { DateRange } from "react-day-picker"
 import { NumberInput } from "@/components/FormInputs/NumberInput"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { DialogTitle } from "@radix-ui/react-dialog"
 
 interface AddItemFormProps {
   onClose: () => void;
@@ -292,6 +293,7 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
     return "bg-red-500" // If any required field is empty or invalid
   }
 
+
   return (
     <DrawerContent>
       <DrawerHeader>
@@ -325,7 +327,7 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
       </DrawerHeader>
       <div className="p-4 pb-0">
         {editingReservation && (
-          <div className="text-base"> {/* Add this wrapper with increased font size */}
+          <div className="text-base">
             {pages[page].content}
           </div>
         )}

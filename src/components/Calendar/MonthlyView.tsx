@@ -107,6 +107,17 @@ export function MonthlyView() {
         setIsEndingMonthOfReservation(false)
         setIsStartingMonthOfReservation(true)
       }
+
+      const newSelection = [reservationOnDay.dateStart.getDate(), reservationOnDay.dateEnd.getDate()];
+      const overlappingReservation = checkOverlappingReservation(newSelection);
+
+      if (overlappingReservation) {
+        const result = handleOverlap(overlappingReservation, newSelection);
+      } else {
+        setIntersectingArrivalHour(null);
+        setIntersectingDepartureHour(null);
+      }
+
       updateEditingReservation(reservationOnDay);
 
       if (!isEditing) {
