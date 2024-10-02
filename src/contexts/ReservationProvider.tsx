@@ -77,9 +77,14 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
     const { user } = useAuth();
 
     const updateEditingReservation = useCallback((updateFields: Partial<Reservation>) => {
-        console.log("updateEditingReservation", updateFields)
+        const { id, ...fieldsWithoutId } = updateFields;
+        setIsEditing(!!id);
         setEditingReservation((prev) => {
-            return { ...prev, ...updateFields };
+            if (id !== undefined && id !== null) {
+                return { ...prev, ...updateFields };
+            } else {
+                return { ...prev, ...fieldsWithoutId };
+            }
         });
     }, []);
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useReservation } from '@/contexts/ReservationProvider';
 
@@ -16,8 +16,6 @@ export function AddItemIcon() {
             handleOpenDrawer();
         }
         handleOpenDrawer();
-
-
     };
 
     return (
@@ -28,11 +26,11 @@ export function AddItemIcon() {
             onClick={handleClick}
         >
             {isEditing ? (
-                <X className="h-6 w-6" />
+                <Edit className="h-6 w-6" />
             ) : (
                 <Plus className="h-6 w-6" />
             )}
-            <span className="sr-only">{isEditing ? 'Cancel editing' : 'Add new item'}</span>
+            <span className="sr-only">{isEditing ? 'Edit item' : 'Add new item'}</span>
         </Button>
     );
 }

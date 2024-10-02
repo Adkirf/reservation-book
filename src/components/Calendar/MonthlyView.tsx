@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useReservation } from '@/contexts/ReservationProvider';
-import { Month, Months, Reservation } from '@/lib/projectTypes';
+import { EditingReservation, Month, Months, Reservation } from '@/lib/projectTypes';
 import { useSwipeable } from 'react-swipeable';
 import { userSetting } from '@/lib/settings';
 import { DayCell } from '@/components/Calendar/DayCell'; // New import
@@ -13,7 +13,7 @@ export function MonthlyView() {
   const { currentDate, isEditing, editingReservation, setCurrentDate, setIsEditing, updateEditingReservation, handleOpenDrawer, resetEditingReservation, setIntersectingArrivalHour, setIntersectingDepartureHour, getReservationsByMonth } = useReservation();
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [isSelecting, setIsSelecting] = useState(false)
-  const [adjustingEnd, setAdjustingEnd] = useState<'start' | 'end' | null>(null);
+  const [adjustingEnd, setAdjustingEnd] = useState<'start' | 'end'>('end');
   const [isEndingMonthOfReservation, setIsEndingMonthOfReservation] = useState(false)
   const [isStartingMonthOfReservation, setIsStartingMonthOfReservation] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
@@ -57,29 +57,89 @@ export function MonthlyView() {
     trackMouse: true
   });
 
-  const checkOverlappingReservation = (newSelection: number[]) => {
-    return currentMonthReservations.find(reservation => {
+
+
+  const isOverlap = (newSelection: number[], returnEarliest: boolean = false, returnLatest: boolean = false): { start?: number, end?: number } | null => {
+    let overlappingReservations = currentMonthReservations.filter(reservation => {
       const reservationStart = new Date(reservation.dateStart).getDate();
       const reservationEnd = new Date(reservation.dateEnd).getDate();
       return (newSelection[0] <= reservationEnd && newSelection[newSelection.length - 1] >= reservationStart);
     });
-  };
 
-  const handleOverlap = (overlappingReservation: Reservation, newSelection: number[]) => {
-    const reservationStart = new Date(overlappingReservation.dateStart);
-    const reservationEnd = new Date(overlappingReservation.dateEnd);
-
-    if (newSelection[0] === reservationEnd.getDate() || newSelection[newSelection.length - 1] === reservationStart.getDate()) {
-      console.log("IIIINTNNTNERRRRSSSEEECCCTIONN");
-      if (newSelection[0] === reservationEnd.getDate()) {
-        setIntersectingDepartureHour(reservationEnd.getHours());
-      } else {
-        setIntersectingArrivalHour(reservationStart.getHours());
-      }
-      return newSelection;
+    if (overlappingReservations.length === 0) {
+      setIntersectingDepartureHour(null)
+      setIntersectingArrivalHour(null)
+      return null;
     }
 
-    return null;
+    if (returnEarliest) {
+
+      const earliestOverlap = overlappingReservations.reduce((earliest, reservation) => {
+        const reservationStart = new Date(reservation.dateStart).getDate();
+        if (newSelection[newSelection.length - 1] >= reservationStart &&
+          (!earliest || reservationStart < earliest.getDate())) {
+          return new Date(reservation.dateStart);
+        }
+        return earliest;
+      }, null as Date | null);
+
+      if (earliestOverlap) {
+        setIntersectingDepartureHour(earliestOverlap.getHours());
+        return { start: earliestOverlap.getDate() };
+      }
+    }
+
+    if (returnLatest) {
+      const latestOverlap = overlappingReservations.reduce((latest, reservation) => {
+        const reservationEnd = new Date(reservation.dateEnd).getDate();
+        if (newSelection[0] <= reservationEnd &&
+          reservationEnd <= newSelection[newSelection.length - 1] &&
+          (!latest || reservationEnd > latest.getDate())) {
+          return new Date(reservation.dateEnd);
+        }
+        return latest;
+      }, null as Date | null);
+      console.log("LATEST", latestOverlap)
+      if (latestOverlap) {
+
+        setIntersectingArrivalHour(latestOverlap.getHours());
+        return { end: latestOverlap.getDate() };
+      } else {
+        return null;
+      }
+    }
+
+
+
+
+    let intersectingStart;
+    let intersectingEnd;
+
+    overlappingReservations.forEach(reservation => {
+      const reservationStart = new Date(reservation.dateStart);
+      const reservationEnd = new Date(reservation.dateEnd);
+
+      //Overalp at start
+      if (newSelection[0] <= reservationEnd.getDate() && newSelection[0] > reservationStart.getDate()) {
+        if (reservationEnd)
+          intersectingStart = reservationEnd;
+      }
+
+      //Overlap at end
+      if (newSelection[newSelection.length - 1] >= reservationStart.getDate() && newSelection[newSelection.length - 1] < reservationEnd.getDate()) {
+        intersectingEnd = reservationStart;
+      }
+    });
+
+
+
+    console.log("INTERSECTING", intersectingStart, intersectingEnd)
+
+    setIntersectingDepartureHour(intersectingEnd ? (intersectingEnd as Date).getHours() : null)
+    setIntersectingArrivalHour(intersectingStart ? (intersectingStart as Date).getHours() : null)
+
+    return { start: intersectingStart, end: intersectingEnd }
+
   };
 
 
@@ -108,26 +168,12 @@ export function MonthlyView() {
         setIsStartingMonthOfReservation(true)
       }
 
-      const newSelection = [reservationOnDay.dateStart.getDate(), reservationOnDay.dateEnd.getDate()];
-      const overlappingReservation = checkOverlappingReservation(newSelection);
-
-      if (overlappingReservation) {
-        const result = handleOverlap(overlappingReservation, newSelection);
-      } else {
-        setIntersectingArrivalHour(null);
-        setIntersectingDepartureHour(null);
-      }
+      isOverlap([reservationOnDay.dateStart.getDate(), reservationOnDay.dateEnd.getDate()])
 
       updateEditingReservation(reservationOnDay);
 
-      if (!isEditing) {
-        handleOpenDrawer();
-      } else {
-        handleDayInteractionStart(day);
-      }
-    } else {
-      handleDayInteractionStart(day);
     }
+    handleDayInteractionStart(day);
   };
 
   const handleDayInteractionStart = (day: number) => {
@@ -141,17 +187,17 @@ export function MonthlyView() {
     if (isEditing && editingReservation) {
       const startDay = editingReservation.dateStart!.getDate();
       const endDay = editingReservation.dateEnd!.getDate();
-
       if (day === startDay) {
         setAdjustingEnd('start');
       } else if (day === endDay) {
         setAdjustingEnd('end');
       } else {
-        setAdjustingEnd('end'); // Default to adjusting end when clicking in the middle
+        setAdjustingEnd('end'); // Default to adjusting end when clicking in
       }
       setIsSelecting(true);
-      setSelectedDays(range(startDay || 0, endDay || 0));
-      return;
+      setSelectedDays(range(startDay || 1, endDay || 2));
+
+      /* return; */
     }
 
     if (selectedDays.length > 0) {
@@ -170,36 +216,25 @@ export function MonthlyView() {
     if (!isWithinExistingReservation) {
       setIsSelecting(true);
       setSelectedDays([day]);
-      setAdjustingEnd(null);
+      setAdjustingEnd('end');
 
       const startDate = new Date(selectedDate);
       startDate.setHours(userSetting.checkInHour, 0, 0, 0);
       const endDate = new Date(selectedDate);
       endDate.setDate(endDate.getDate() + 1);
       endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
-
+      console.log(startDate, endDate)
       resetEditingReservation();
       updateEditingReservation({
         dateStart: startDate,
         dateEnd: endDate,
       });
       const newSelection = [startDate.getDate(), endDate.getDate()];
-      const overlappingReservation = checkOverlappingReservation(newSelection);
-
-      if (overlappingReservation) {
-        const result = handleOverlap(overlappingReservation, newSelection);
-        if (result === null) {
-          return;
-        }
-        return;
-      }
-
-      setIntersectingArrivalHour(null);
-      setIntersectingDepartureHour(null);
+      isOverlap(newSelection)
     }
   }
 
-  const handleDayInteractionMove = (day: number) => {
+  const handleDayInteractionMove = async (day: number) => {
     if (isSelecting) {
       setSelectedDays(prevSelected => {
         if (prevSelected.length === 0) return [day];
@@ -208,8 +243,8 @@ export function MonthlyView() {
         let lastSelected = prevSelected[prevSelected.length - 1];
 
         if (isEditing) {
-          firstSelected = editingReservation.dateStart!.getDate();
-          lastSelected = editingReservation.dateEnd!.getDate();
+          firstSelected = editingReservation.dateStart.getDate();
+          lastSelected = editingReservation.dateEnd.getDate();
           if (isEndingMonthOfReservation) {
             firstSelected = 0;
             lastSelected = editingReservation.dateEnd!.getDate();
@@ -220,71 +255,72 @@ export function MonthlyView() {
           }
         }
 
-        let newSelection: number[];
+        let newSelection: number[] = [];
 
         if (adjustingEnd === 'start') {
           // Adjusting start date
-          newSelection = range(Math.max(day, 1), lastSelected);
-        } else if (adjustingEnd === 'end') {
+          newSelection = range(Math.max(day, 1), lastSelected)
+
+        }
+        if (adjustingEnd === 'end') {
           // Adjusting end date
           newSelection = range(firstSelected, Math.min(day, daysInMonth));
-        } else {
-          // New selection
-          if (isEditing) {
-            newSelection = range(firstSelected, Math.min(day, daysInMonth));
-          } else {
-            newSelection = range(Math.min(firstSelected, day), Math.max(firstSelected, day));
+
+        }
+        // newSeleciton
+        // returnEarliest overlapping reservation.dateStart && newSelection[length-1], 
+        // returnLatest overlapping reservation.dateEnd && newSelection[0]
+        let adjustedSelection = newSelection;
+        if (isEditing) {
+          if (adjustingEnd === 'start') {
+            adjustedSelection = [day, editingReservation.dateStart.getDate() - 1]
+          }
+          if (adjustingEnd === 'end') {
+            adjustedSelection = [editingReservation.dateEnd.getDate() + 1, day]
           }
         }
-
-
-
-
-        const overlappingReservation = checkOverlappingReservation(newSelection);
-
-        if (overlappingReservation) {
-          const result = handleOverlap(overlappingReservation, newSelection);
-          console.log("OOOOOVOOVOVOVOOV")
-          if (result === null) {
-            return prevSelected;
+        const overlap = isOverlap(adjustedSelection, (adjustingEnd === 'end'), (adjustingEnd === 'start'))
+        if (overlap) {
+          console.log("OVVDR")
+          setIsSelecting(false);
+          if (overlap.start) {
+            return [...prevSelected, overlap.start]
           }
-          return result;
+          if (overlap.end) {
+            return [overlap.end, ...prevSelected]
+          }
+
         }
 
-        setIntersectingArrivalHour(null);
-        setIntersectingDepartureHour(null);
 
         return newSelection;
       });
     }
+
   }
 
   const handleDayInteractionEnd = () => {
     setIsSelecting(false);
-    setAdjustingEnd(null);
+    setAdjustingEnd('end');
     if (selectedDays.length > 0) {
-
       let startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
       startDate.setHours(userSetting.checkInHour, 0, 0, 0);
       let endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
       endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
 
       if (isEndingMonthOfReservation) {
-        startDate = editingReservation.dateStart!
+        startDate = new Date(editingReservation.dateStart)
       }
 
       if (isStartingMonthOfReservation) {
-        endDate = editingReservation.dateEnd!
+        endDate = new Date(editingReservation.dateEnd)
       }
-
       updateEditingReservation({
+        id: editingReservation.id,
         dateStart: startDate,
         dateEnd: endDate,
       });
-      if (isEditing) {
-        handleOpenDrawer(1);
-        setIsEditing(false);
-      }
+
     }
   }
 

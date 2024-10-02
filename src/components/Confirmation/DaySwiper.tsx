@@ -5,8 +5,8 @@ import { format } from 'date-fns'
 import { useSwipeable } from 'react-swipeable'
 import { useReservation } from '@/contexts/ReservationProvider'
 import { Upload } from 'lucide-react'
-import dynamic from 'next/dynamic'
-import { ShareComponent } from './ShareComponent'
+import { ShareComponent } from '@/components/Confirmation/ShareComponent'
+
 export default function Component() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { reservations } = useReservation()

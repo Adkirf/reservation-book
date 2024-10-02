@@ -234,7 +234,7 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
           <div>
             <Label>Date Range</Label>
             <DayRangePicker
-              currentDateRange={editingReservation?.dateStart && editingReservation?.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]}
+              currentDateRange={editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]}
               onClose={handleClose}
             />
           </div>

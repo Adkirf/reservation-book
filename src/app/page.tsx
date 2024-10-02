@@ -21,12 +21,13 @@ export default function Home() {
     }
   }, [reservations, selectedReservation])
 
-  const handleReservationChange = (newReservation: Reservation) => {
-    setSelectedReservation(newReservation)
-  }
-
-  if (isLoading || reservations.length === 0 || !selectedReservation) {
+  if (isLoading) {
     return <LoadingCircle />
+  }
+  if (reservations.length === 0) {
+    return <div className="flex flex-col h-full w-full p-4">
+      No Reservations found
+    </div>
   }
 
   return (

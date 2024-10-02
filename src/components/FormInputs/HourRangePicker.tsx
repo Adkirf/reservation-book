@@ -62,16 +62,8 @@ interface HourRangePickerProps {
 
 export function HourRangePickerComponent({ onHourRangeChange }: HourRangePickerProps) {
   const { editingReservation, updateEditingReservation, intersectingArrivalHour, intersectingDepartureHour } = useReservation()
-  const [arrival, setArrival] = useState<number>(() => {
-    return editingReservation.dateStart instanceof Date && !isNaN(editingReservation.dateStart.getTime())
-      ? editingReservation.dateStart.getHours()
-      : new Date().getHours()
-  })
-  const [departure, setDeparture] = useState<number>(() => {
-    return editingReservation.dateEnd instanceof Date && !isNaN(editingReservation.dateEnd.getTime())
-      ? editingReservation.dateEnd.getHours()
-      : new Date().getHours() + 1
-  })
+  const [arrival, setArrival] = useState<number>(0)
+  const [departure, setDeparture] = useState<number>(1)
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState<Step>('arrival')
   const [popoverWidth, setPopoverWidth] = useState<number>(0)
@@ -80,10 +72,15 @@ export function HourRangePickerComponent({ onHourRangeChange }: HourRangePickerP
   useEffect(() => {
     if (editingReservation.dateStart instanceof Date && !isNaN(editingReservation.dateStart.getTime()) &&
       editingReservation.dateEnd instanceof Date && !isNaN(editingReservation.dateEnd.getTime())) {
+
       setArrival(editingReservation.dateStart.getHours())
       setDeparture(editingReservation.dateEnd.getHours())
     }
   }, [editingReservation])
+
+  useEffect(() => {
+    console.log("INTERSECTING", intersectingArrivalHour, intersectingDepartureHour)
+  }, [intersectingArrivalHour, intersectingDepartureHour])
 
   useEffect(() => {
     const updateWidth = () => {
@@ -161,7 +158,7 @@ export function HourRangePickerComponent({ onHourRangeChange }: HourRangePickerP
               <HourPicker
                 value={arrival}
                 onChange={handleArrivalChange}
-                intersectingHour={intersectingDepartureHour}
+                intersectingHour={intersectingArrivalHour}
                 currentStep={currentStep}
               />
             </div>
@@ -171,7 +168,7 @@ export function HourRangePickerComponent({ onHourRangeChange }: HourRangePickerP
               <HourPicker
                 value={departure}
                 onChange={handleDepartureChange}
-                intersectingHour={intersectingArrivalHour}
+                intersectingHour={intersectingDepartureHour}
                 currentStep={currentStep}
               />
             </div>
