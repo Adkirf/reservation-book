@@ -47,7 +47,7 @@ function capitalizeFirstLetter(string: string): string {
  * It allows for responsive design for different screen sizes.
  */
 export default function ReservationTable({ reservations, visibleColumns, searchQuery, setSearchQuery, toggleColumn }: ReservationTableProps) {
-    const { sortConfig, requestSort, formatDateRange } = useReservationFilters(reservations);
+    const { formatDateRange } = useReservationFilters(reservations);
     const { updateEditingReservation, handleOpenDrawer } = useReservation();
 
     const formatCellValue = (value: any, column: string): string => {
@@ -78,17 +78,11 @@ export default function ReservationTable({ reservations, visibleColumns, searchQ
                             {visibleColumns.map((column) => (
                                 <TableHead
                                     key={column}
-                                    onClick={() => requestSort(column)}
-                                    className="cursor-pointer whitespace-nowrap bg-background"
+                                    className="whitespace-nowrap bg-background"
                                 >
                                     {column === 'numberOfPeople'
                                         ? 'Guests'
                                         : capitalizeFirstLetter(column)}
-                                    {sortConfig.key === column && (
-                                        sortConfig.direction === 'asc'
-                                            ? <ChevronUp className="inline ml-1" />
-                                            : <ChevronDown className="inline ml-1" />
-                                    )}
                                 </TableHead>
                             ))}
                         </TableRow>

@@ -14,8 +14,8 @@ export default function ConfirmationCard({
   reservation: Reservation
 }) {
   return (
-    <div className="p-4 flex flex-col items-center h-full overflow-x-auto">
-      <Card className="w-full max-w-md shadow-lg flex flex-col h-full">
+    <div className="p-4 flex flex-col items-center flex-grow justify-center overflow-x-auto">
+      <Card className="w-full max-w-md shadow-lg flex flex-col ">
         <CardHeader className="text-center flex flex-row items-center justify-between">
           <CardTitle className="text-2xl font-bold">
             {reservation.name}

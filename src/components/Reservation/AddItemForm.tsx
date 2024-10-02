@@ -15,6 +15,7 @@ import { DateRange } from "react-day-picker"
 import { NumberInput } from "@/components/FormInputs/NumberInput"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { DialogTitle } from "@radix-ui/react-dialog"
+import { useRouter } from 'next/navigation';
 
 interface AddItemFormProps {
   onClose: () => void;
@@ -22,12 +23,15 @@ interface AddItemFormProps {
 }
 
 export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
+  const router = useRouter();
+
   const {
     editingReservation,
     addNewReservation,
     updateReservation,
     updateEditingReservation,
     resetEditingReservation,
+    setCurrentDate,
     resetChanges,
     setIsEditing,
     reservations,
@@ -169,12 +173,13 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
   }
 
   const handleClose = () => {
-    resetChanges()
-    if (editingReservation.id) {
-
-      setIsEditing(true)
+    // Check if we're not already on the calendar page
+    if (window.location.pathname !== '/calendar') {
+      // Navigate to the calendar page
+      router.push('/calendar');
+      setCurrentDate(editingReservation.dateStart)
     }
-    onClose()
+    onClose();
   }
 
   const handleDeleteReservation = async () => {

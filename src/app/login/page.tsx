@@ -17,7 +17,7 @@ export default function LoginPage() {
     // Redirect authenticated users to the dashboard
     // This prevents logged-in users from accessing the login page
     if (user) {
-        router.replace('/dashboard');
+        router.replace('/');
         return null;
     }
 

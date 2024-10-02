@@ -39,7 +39,9 @@ export default function ConfirmationPage() {
 
 
     if (isLoading) {
-        return <LoadingCircle />
+        return <div className="flex flex-col justify-center items-center h-full w-full">
+            <LoadingCircle />
+        </div>
     }
 
     if (!reservation) {

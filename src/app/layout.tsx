@@ -13,6 +13,7 @@ import { usePathname } from 'next/navigation';
 import { ReservationProvider, useReservation } from '@/contexts/ReservationProvider'; // Update this import
 import { Drawer } from "@/components/ui/drawer";
 import { Toaster } from "@/components/ui/toaster";
+import { useRouter } from 'next/navigation'; // Add this import
 
 // Load custom fonts for the application
 const geistSans = localFont({
@@ -33,7 +34,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login'; // Define isLoginPage
+  const isLoginPage = pathname === '/login';
+  const isConfirmationPage = pathname.startsWith('/confirmation/');
 
   return (
     <html lang="en">
@@ -42,10 +44,10 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen`}
       >
         <AuthProvider>
-          {isLoginPage ? (
+          {isLoginPage || isConfirmationPage ? (
             children
           ) : (
             <ProtectedRoute allowedRoles={['employee', 'admin']}>
@@ -61,11 +63,12 @@ export default function RootLayout({
 }
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
+  const router = useRouter(); // Add this line
 
   return (
-    <div className="h-screen flex flex-col sm:flex-row bg-background text-foreground">
+    <div className="flex flex-col flex-grow sm:flex-row bg-background text-foreground">
       <MenuSidebar />
-      <div className="flex-grow flex flex-col overflow-hidden">
+      <div className="h-screen flex flex-col overflow-hidden">
         <header className="sticky top-0 z-10 bg-background border-b sm:hidden">
           <div className="container mx-auto px-4 h-16 flex items-center">
             <MenuSheetComponent />
@@ -73,7 +76,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-grow overflow-hidden">
+        <main className="flex flex-col flex-grow overflow-hidden">
           {children}
         </main>
 

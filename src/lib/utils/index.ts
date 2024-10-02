@@ -5,7 +5,6 @@ import { twMerge } from "tailwind-merge"
 export interface ReservationFilterOptions {
     searchQuery: string;
     visibleColumns: string[];
-    sortConfig: { key: string; direction: 'asc' | 'desc' };
 }
 
 export const sortAndFilterReservations = (reservations: Reservation[], options: ReservationFilterOptions): Reservation[] => {
@@ -20,27 +19,7 @@ export const sortAndFilterReservations = (reservations: Reservation[], options: 
         );
     }
 
-    // Sort reservations
-    const { key, direction } = options.sortConfig;
-    filteredReservations.sort((a, b) => {
-        if (key === 'dateStart' || key === 'dateEnd') {
-            return direction === 'asc'
-                ? new Date(a[key]).getTime() - new Date(b[key]).getTime()
-                : new Date(b[key]).getTime() - new Date(a[key]).getTime();
-        } else if (key === 'numberOfPeople') {
-            return direction === 'asc'
-                ? a.numberOfPeople - b.numberOfPeople
-                : b.numberOfPeople - a.numberOfPeople;
-        } else {
-            const aValue = a[key as keyof Reservation] || '';
-            const bValue = b[key as keyof Reservation] || '';
-            return direction === 'asc'
-                ? String(aValue).localeCompare(String(bValue))
-                : String(bValue).localeCompare(String(aValue));
-        }
-    });
-
-    console.log('Filtered and sorted reservations:', filteredReservations);
+    console.log('Filtered reservations:', filteredReservations);
     return filteredReservations;
 }
 

@@ -14,39 +14,28 @@ export const useReservationFilters = (initialReservations: Reservation[]) => {
         return allColumns.filter(column => !deselectedColumns.includes(column));
     }, [deselectedColumns]);
 
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'dateStart', direction: 'asc' });
-
     useEffect(() => {
         updateFilters();
-    }, [sortConfig, searchQuery, visibleColumns]);
+    }, [searchQuery, visibleColumns]);
 
     const sortedReservations = useMemo(() => {
         return sortAndFilterReservations(initialReservations, {
             searchQuery,
             visibleColumns,
-            sortConfig,
         }).map(reservation => ({
             ...reservation,
             date: formatDateRange(reservation.dateStart, reservation.dateEnd)
         }));
-    }, [initialReservations, searchQuery, visibleColumns, sortConfig]);
+    }, [initialReservations, searchQuery, visibleColumns]);
 
     const updateFilters = useCallback(() => {
         const filteredReservations = sortAndFilterReservations(initialReservations, {
             searchQuery,
             visibleColumns,
-            sortConfig,
         });
         console.log('Filtered reservations:', filteredReservations);
         setReservations(filteredReservations);
-    }, [initialReservations, searchQuery, visibleColumns, sortConfig]);
-
-    const requestSort = (key: string) => {
-        setSortConfig(prevConfig => ({
-            key,
-            direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc',
-        }));
-    };
+    }, [initialReservations, searchQuery, visibleColumns]);
 
     const toggleColumn = (column: string) => {
         setDeselectedColumns(prev => {
@@ -72,9 +61,7 @@ export const useReservationFilters = (initialReservations: Reservation[]) => {
         defaultColumns,
         toggleColumn,
         updateFilters,
-        sortConfig,
-        requestSort,
-        formatDateRange, // Add this function to the returned object
+        formatDateRange,
     };
 };
 
