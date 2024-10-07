@@ -30,21 +30,24 @@ const geistMono = localFont({
 // PWA Installation Instructions Component
 function PWAInstallInstructions({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg max-w-sm">
-        <h2 className="text-xl font-bold mb-4">Install Our App</h2>
-        <p className="mb-4">For the best experience, install our app on your home screen:</p>
-        <ol className="list-decimal list-inside mb-4">
-          <li>Tap the share button in your browser</li>
-          <li>Select "Add to Home Screen"</li>
-          <li>Tap "Add" to confirm</li>
-        </ol>
-        <button
-          onClick={onClose}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Got it
-        </button>
+    <div className="w-full h-screen bg-gray-200 p-4">
+      <div className="flex flex-col gap-4 w-full max-w-[500px] justify-center items-center mt-8">
+        <div className="w-[100px] h-[100px]">
+          <img className="rounded-xl" src="/assets/addIcon2.png" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-700">
+          Add to Home Screen
+        </h3>
+        <p>You need to add this website to your home screen.</p>
+
+        <div className="border border-gray-400 rounded-xl p-4 mt-8">
+          <p>1. In your browser, tap the share button.</p>
+          <img src="/assets/share.png" />
+        </div>
+        <div className="border border-gray-400 rounded-xl p-4">
+          <p>2. Add to your Home Screen.</p>
+          <img src="/assets/addtohomescreen.png" />
+        </div>
       </div>
     </div>
   );
