@@ -1,7 +1,5 @@
 
 now: 
-- Swipe icon in calendar
-- language
 - Support, videos for each page/feature
 - test with fully booked year
 

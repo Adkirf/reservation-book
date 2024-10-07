@@ -102,20 +102,19 @@ export default function RootLayout({
     if (isConfirmationPage) {
       return children;
     }
-    else {
-      return <AuthProvider>
-        {showInstallInstructions && !isAppInstalled ? (
-          <PWAInstallInstructions />
-        ) : isLoginPage ? (
-          children
-        ) : (
-          <ProtectedRoute allowedRoles={['employee', 'admin']}>
-            <ReservationProvider>
-              <LayoutContent>{children}</LayoutContent>
-            </ReservationProvider>
-          </ProtectedRoute>
-        )}
-      </AuthProvider>
+    else if (showInstallInstructions && !isAppInstalled) {
+      return <PWAInstallInstructions />
+    }
+    else if (isLoginPage) {
+      return children;
+    } else {
+      return (
+        <ProtectedRoute allowedRoles={['employee', 'admin']}>
+          <ReservationProvider>
+            <LayoutContent>{children}</LayoutContent>
+          </ReservationProvider>
+        </ProtectedRoute>
+      )
     }
   }
 
@@ -127,7 +126,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen fixed`}
       >
-        {intialRedirect(children)}
+        <AuthProvider>
+          {intialRedirect(children)}
+        </AuthProvider>
       </body>
     </html>
   );
