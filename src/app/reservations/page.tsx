@@ -19,7 +19,6 @@ export default function ReservationsPage() {
         updateFilters
     } = useReservationFilters(reservations);
 
-    console.log('Reservations page re-rendered, reservations:', sortedReservations);
 
     useEffect(() => {
         updateFilters();

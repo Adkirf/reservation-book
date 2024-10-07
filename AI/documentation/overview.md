@@ -50,6 +50,10 @@ reservation-book/
 │   ├── notes/
 │   └── prompts/
 │       └── update-overview.md
+├── public/
+│   ├── icon-192x192.png
+│   ├── icon-512x512.png
+│   └── manifest.json
 ├── src/
 │   ├── app/
 │   │   ├── admin/
@@ -58,14 +62,18 @@ reservation-book/
 │   │   │   └── page.tsx
 │   │   ├── login/
 │   │   │   └── page.tsx
+│   │   ├── offline/
+│   │   │   └── page.tsx
 │   │   ├── reservations/
 │   │   │   └── page.tsx
 │   │   ├── support/
 │   │   │   └── page.tsx
 │   │   ├── globals.css
 │   │   ├── layout.tsx
+│   │   ├── manifest.ts
 │   │   ├── metadata.ts
-│   │   └── page.tsx
+│   │   ├── page.tsx
+│   │   └── sw.ts
 │   ├── components/
 │   │   ├── Dashboard/
 │   │   │   ├── DailyView.tsx

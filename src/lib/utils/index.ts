@@ -8,7 +8,6 @@ export interface ReservationFilterOptions {
 }
 
 export const sortAndFilterReservations = (reservations: Reservation[], options: ReservationFilterOptions): Reservation[] => {
-    console.log('sortAndFilterReservations called with options:', options);
     let filteredReservations = [...reservations];
 
     // Filter by search query
@@ -19,7 +18,6 @@ export const sortAndFilterReservations = (reservations: Reservation[], options: 
         );
     }
 
-    console.log('Filtered reservations:', filteredReservations);
     return filteredReservations;
 }
 

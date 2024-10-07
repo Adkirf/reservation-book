@@ -1,5 +1,6 @@
 'use client';
 
+import LoadingCircle from '@/components/ui/LoadingCircle';
 import { useAuth } from './AuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -33,7 +34,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
 
     // Show loading state while auth information is being fetched
     if (loading) {
-        return <div>Loading...</div>;
+        return <div className="flex flex-col justify-center items-center h-full w-full">
+            <LoadingCircle />
+        </div>
     }
 
     // Render "Not authorized" if user is not authenticated or not authorized

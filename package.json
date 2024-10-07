@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build-pwa": "next build && next-pwa",
+    "start-pwa": "next start"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.1",

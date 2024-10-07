@@ -33,7 +33,6 @@ export const useReservationFilters = (initialReservations: Reservation[]) => {
             searchQuery,
             visibleColumns,
         });
-        console.log('Filtered reservations:', filteredReservations);
         setReservations(filteredReservations);
     }, [initialReservations, searchQuery, visibleColumns]);
 

@@ -11,7 +11,6 @@ export function AddItemIcon() {
     const handleClick = () => {
         // Initialize a new reservation if none exists
         if (isEditing) {
-            setIsEditing(false);
             handleOpenDrawer(1);
         } else if (editingReservation?.id) {
             resetEditingReservation();
