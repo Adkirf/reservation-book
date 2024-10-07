@@ -4,12 +4,12 @@ import { useRef } from 'react'
 import { format } from 'date-fns'
 import { useSwipeable } from 'react-swipeable'
 import { useReservation } from '@/contexts/ReservationProvider'
-import { Upload } from 'lucide-react'
-import { ShareComponent } from '@/components/Confirmation/ShareComponent'
+import { useRouter } from 'next/navigation'
 
 export default function Component() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { reservations } = useReservation()
+  const router = useRouter()
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -28,8 +28,12 @@ export default function Component() {
     trackMouse: true
   })
 
+  const handleReservationClick = (reservationId: string) => {
+    router.push(`/confirmation/${reservationId}`)
+  }
+
   return (
-    <div className="relative w-full max-w-3xl mx-auto">
+    <div className="relative w-full h-full justify-center items-center flex max-w-3xl mx-auto">
       <div
         {...handlers}
         ref={scrollRef}
@@ -39,14 +43,10 @@ export default function Component() {
         {reservations.map((reservation) => (
           <div
             key={reservation.id}
-            className="flex-none w-72 h-40 snap-start flex flex-col items-start justify-center p-4 border border-gray-200 rounded-lg m-2 bg-white shadow-sm relative"
+            className="flex-none w-72 h-40 snap-start flex flex-col items-start justify-center p-4 border border-gray-200 rounded-lg m-2 bg-white shadow-sm relative cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => handleReservationClick(reservation.id)}
           >
-            <div className='flex justify-between w-full'>
-              <h3 className="text-lg font-bold mb-2">{reservation.name}</h3>
-              <ShareComponent reservationId={reservation.id}>
-                <Upload className="h-5 w-5 text-gray-400 cursor-pointer" />
-              </ShareComponent>
-            </div>
+            <h3 className="text-lg font-bold mb-2">{reservation.name}</h3>
             <p className="text-sm text-gray-600 mb-1">
               From: {format(new Date(reservation.dateStart), 'MMM d, yyyy')}
             </p>

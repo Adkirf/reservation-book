@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Clock, ChevronRight, Home } from 'lucide-react'
 import { useReservation } from '@/contexts/ReservationProvider'
+import { useAuth } from '@/contexts/AuthProvider'
 
 type Step = 'arrival' | 'departure'
 
@@ -44,14 +45,14 @@ const HourPicker = ({ value, onChange, intersectingHour, currentStep }: {
   )
 }
 
-const Breadcrumbs = ({ currentStep }: { currentStep: Step }) => {
+const Breadcrumbs = ({ currentStep, t }: { currentStep: Step, t: (key: string) => string }) => {
   return (
     <nav className="flex items-center space-x-1 text-xs mb-2" aria-label="Breadcrumb">
       <Home className="h-3 w-3" />
       <ChevronRight className="h-3 w-3" />
-      <span className={currentStep === 'arrival' ? 'font-semibold' : ''}>Arrival</span>
+      <span className={currentStep === 'arrival' ? 'font-semibold' : ''}>{t('formInputs.arrival')}</span>
       <ChevronRight className="h-3 w-3" />
-      <span className={currentStep === 'departure' ? 'font-semibold' : ''}>Departure</span>
+      <span className={currentStep === 'departure' ? 'font-semibold' : ''}>{t('formInputs.departure')}</span>
     </nav>
   )
 }
@@ -68,6 +69,7 @@ export function HourRangePickerComponent({ onHourRangeChange }: HourRangePickerP
   const [currentStep, setCurrentStep] = useState<Step>('arrival')
   const [popoverWidth, setPopoverWidth] = useState<number>(0)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const { t } = useAuth();
 
   useEffect(() => {
     if (editingReservation.dateStart instanceof Date && !isNaN(editingReservation.dateStart.getTime()) &&
@@ -150,11 +152,11 @@ export function HourRangePickerComponent({ onHourRangeChange }: HourRangePickerP
         className="p-2"
         style={{ width: `${popoverWidth}px`, maxWidth: '100vw' }}
       >
-        <Breadcrumbs currentStep={currentStep} />
+        <Breadcrumbs currentStep={currentStep} t={t} />
         <div className="space-y-2">
           {currentStep === 'arrival' ? (
             <div>
-              <h4 className="font-medium text-sm mb-1">Select Arrival Hour</h4>
+              <h4 className="font-medium text-sm mb-1">{t('formInputs.selectArrivalHour')}</h4>
               <HourPicker
                 value={arrival}
                 onChange={handleArrivalChange}
@@ -164,7 +166,7 @@ export function HourRangePickerComponent({ onHourRangeChange }: HourRangePickerP
             </div>
           ) : (
             <div>
-              <h4 className="font-medium text-sm mb-1">Select Departure Hour</h4>
+              <h4 className="font-medium text-sm mb-1">{t('formInputs.selectDepartureHour')}</h4>
               <HourPicker
                 value={departure}
                 onChange={handleDepartureChange}

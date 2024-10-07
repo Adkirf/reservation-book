@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowLeftRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useReservation } from '@/contexts/ReservationProvider';
-import { EditingReservation, Month, Months, Reservation } from '@/lib/projectTypes';
+import { Month, Months } from '@/lib/projectTypes';
 import { useSwipeable } from 'react-swipeable';
 import { userSetting } from '@/lib/settings';
-import { DayCell } from '@/components/Calendar/DayCell'; // New import
+import { DayCell } from '@/components/Calendar/DayCell';
+import { useAuth } from '@/contexts/AuthProvider';
 
 export function MonthlyView() {
   const { currentDate, isEditing, editingReservation, setCurrentDate, setIsEditing, updateEditingReservation, handleOpenDrawer, resetEditingReservation, setIntersectingArrivalHour, setIntersectingDepartureHour, getReservationsByMonth } = useReservation();
@@ -17,16 +18,15 @@ export function MonthlyView() {
   const [isEndingMonthOfReservation, setIsEndingMonthOfReservation] = useState(false)
   const [isStartingMonthOfReservation, setIsStartingMonthOfReservation] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
+  const { t } = useAuth();
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
-  const monthName = currentDate.toLocaleString('default', { month: 'long' })
+  const monthName = t(`calendar.months.${currentDate.getMonth()}`)
   const year = currentDate.getFullYear()
 
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
   const emptyDays = Array.from({ length: firstDayOfMonth }, (_, i) => i)
-
-
 
   const nextMonth = async () => {
     const firstDayNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
@@ -224,7 +224,6 @@ export function MonthlyView() {
       endDate.setDate(endDate.getDate() + 1);
       endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
       console.log(startDate, endDate)
-      resetEditingReservation();
       updateEditingReservation({
         dateStart: startDate,
         dateEnd: endDate,
@@ -423,6 +422,8 @@ export function MonthlyView() {
     }
   }, [])
 
+  const weekdays = t('calendar.weekdays').split(',') as string[];
+
   return (
     <div className="h-full w-full md:max-w-[400px] p-4 flex flex-col">
       <div className="flex justify-between items-center mb-4">
@@ -437,7 +438,7 @@ export function MonthlyView() {
         </Button>
       </div>
       <div className="grid grid-cols-7 text-center" ref={calendarRef}>
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+        {weekdays.map((day: string) => (
           <div key={day} className="text-sm font-medium text-muted-foreground">
             {day}
           </div>
@@ -466,8 +467,10 @@ export function MonthlyView() {
       </div>
       <div
         {...handlers}
-        className="flex-grow"
+        className="flex-grow flex flex-col items-center justify-center"
       >
+        <ArrowLeftRight className="text-muted-foreground opacity-90" size={32} />
+        <p className="text-sm">{t('calendar.swipeInstructions')}</p>
       </div>
     </div>
   )

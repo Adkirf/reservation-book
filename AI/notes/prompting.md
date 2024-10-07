@@ -93,18 +93,18 @@ Follow exactly the intructions in the new SOP file to update the NewComponent.ts
 @SOP file
 Follow exactly the intructions in the new SOP file to create the NewComponent.tsx. Do not make any changes outside the provided list of files. 
 
+14. Implement language
+@overview.md @newFeatureFS.md @src
 
+create new SOP file
+
+Follow exactly the instructions of the next unchecked list element in the @languagesSOP.md . Do not change anything outside the defined folder structure. 
+
+Follow the same logic to dynamically translate the text in the next unchecked list element of the @languagesSOP.md and update the checklist.
 
 
  
 
-
-
-
-(Consider adding pagination or infinite scrolling to the UserList component if you expect a large number of users.
-Implement error handling and success messages for user deletion.
-Add input validation for the email field when creating a new user.
-Consider adding a search or filter functionality to the UserList component.)
 
 
 

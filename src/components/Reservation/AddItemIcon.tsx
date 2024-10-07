@@ -11,12 +11,18 @@ export function AddItemIcon() {
     const handleClick = () => {
         // Initialize a new reservation if none exists
         if (isEditing) {
-            handleOpenDrawer(1);
+            if (isReservationList) {
+                resetEditingReservation();
+                handleOpenDrawer();
+            } else {
+                handleOpenDrawer(1);
+            }
         } else if (editingReservation?.id) {
             resetEditingReservation();
             handleOpenDrawer();
+        } else {
+            handleOpenDrawer();
         }
-        handleOpenDrawer();
     };
 
     const isReservationList = pathname === '/reservations' || pathname === '/';

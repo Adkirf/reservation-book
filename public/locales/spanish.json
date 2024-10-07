@@ -1,0 +1,129 @@
+{
+  "admin": {
+    "userManagement": "Gestión de Usuarios",
+    "addNewUser": "Agregar Nuevo Usuario",
+    "email": "Correo electrónico",
+    "employee": "Empleado",
+    "admin": "Administrador",
+    "addUser": "Agregar Usuario",
+    "userAddedSuccess": "Usuario agregado exitosamente",
+    "userAddedError": "Error al agregar usuario"
+  },
+  "calendar": {
+    "title": "Calendario",
+    "months": [
+      "Enero",
+      "Febrero",
+      "Marzo",
+      "Abril",
+      "Mayo",
+      "Junio",
+      "Julio",
+      "Agosto",
+      "Septiembre",
+      "Octubre",
+      "Noviembre",
+      "Diciembre"
+    ],
+    "weekdays": "Dom,Lun,Mar,Mié,Jue,Vie,Sáb",
+    "swipeInstructions": "Desliza para cambiar de mes"
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "error": "Autenticación fallida. Por favor, inténtalo de nuevo."
+  },
+  "offline": {
+    "title": "Estás desconectado",
+    "message": "Por favor, verifica tu conexión a internet e inténtalo de nuevo."
+  },
+  "reservations": {
+    "title": "Reservas",
+    "searchPlaceholder": "Buscar...",
+    "toggleColumns": "Alternar columnas",
+    "noReservations": "No se encontraron reservas"
+  },
+  "support": {
+    "title": "Soporte"
+  },
+  "layout": {
+    "appName": "Mi Aplicación",
+    "addToHomeScreen": "Agregar a la pantalla de inicio",
+    "shareButton": "En tu navegador, toca el botón de compartir.",
+    "addHomeScreenButton": "Agregar a tu pantalla de inicio.",
+    "offlineMessage": "Estás desconectado",
+    "checkConnection": "Por favor, verifica tu conexión a internet e inténtalo de nuevo."
+  },
+  "home": {
+    "noReservations": "No se encontraron reservas"
+  },
+  "confirmation": {
+    "checkIn": "Entrada",
+    "checkOut": "Salida",
+    "guests": "Huéspedes",
+    "person": "persona",
+    "people": "personas",
+    "comment": "Comentario",
+    "noComment": "Sin comentarios",
+    "contactInformation": "Información de contacto:"
+  },
+  "formInputs": {
+    "pickDate": "Elige una fecha",
+    "pickDateRange": "Elige un rango de fechas",
+    "arrival": "Llegada",
+    "departure": "Salida",
+    "selectArrivalHour": "Selecciona la hora de llegada",
+    "selectDepartureHour": "Selecciona la hora de salida"
+  },
+  "reservation": {
+    "basicInfo": "Información básica",
+    "dateAndTime": "Fecha y hora",
+    "additionalInfo": "Información adicional",
+    "name": "Nombre",
+    "enterReservationName": "Ingresa el nombre de la reserva",
+    "comment": "Comentario (Opcional)",
+    "enterReservationDetails": "Ingresa los detalles de la reserva",
+    "timeRange": "Rango de tiempo",
+    "dateRange": "Rango de fechas",
+    "numberOfPeople": "Número de personas",
+    "contact": "Contacto (Opcional)",
+    "enterContactInfo": "Ingresa la información de contacto (separada por comas)",
+    "editReservation": "Editar reserva",
+    "addNewReservation": "Agregar nueva reserva",
+    "deleteReservation": "Eliminar reserva",
+    "deleteConfirmTitle": "¿Estás completamente seguro?",
+    "deleteConfirmDescription": "Esta acción no se puede deshacer. Esto eliminará permanentemente la reserva.",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "submit": "Enviar"
+  },
+  "userManagement": {
+    "login": "Iniciar sesión",
+    "loginDescription": "Solo puedes iniciar sesión si tu empleado te ha registrado.",
+    "signInWithGoogle": "Iniciar sesión con Google",
+    "or": "o",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "createAccount": "Crear una cuenta"
+  },
+  "menuSheet": {
+    "toggleMenu": "Alternar menú",
+    "menu": "Menú",
+    "home": "Inicio",
+    "calendar": "Calendario",
+    "allReservations": "Todas las reservas",
+    "support": "Soporte",
+    "signOut": "Cerrar sesión"
+  },
+  "protectedRoute": {
+    "unauthorized": "No estás autorizado para ver esta página."
+  },
+  "columns": {
+    "name": "Nombre",
+    "dateStart": "Fecha de inicio",
+    "dateEnd": "Fecha de fin",
+    "numberOfPeople": "Número de personas",
+    "comment": "Comentario",
+    "contact": "Contacto"
+  }
+}

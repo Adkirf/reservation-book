@@ -17,16 +17,16 @@ import { signOut } from "@/lib/firebase/auth";
 
 // Define menu items with their respective icons and routes
 const menuItems = [
-  { href: "/", icon: Home, label: "Home" },
-  { href: "/calendar", icon: Calendar, label: "Calendar" },
-  { href: "/reservations", icon: Book, label: "All Reservations" },
-  { href: "/support", icon: HelpCircle, label: "Support" },
+  { href: "/", icon: Home, label: "menuSheet.home" },
+  { href: "/calendar", icon: Calendar, label: "menuSheet.calendar" },
+  { href: "/reservations", icon: Book, label: "menuSheet.allReservations" },
+  { href: "/support", icon: HelpCircle, label: "menuSheet.support" },
 ]
 
 // Update MenuContent to accept and use onItemClick prop
 function MenuContent({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, t } = useAuth()
   const router = useRouter() // Add this
 
   const handleItemClick = (href: string) => {
@@ -50,13 +50,13 @@ function MenuContent({ onItemClick }: { onItemClick?: () => void }) {
             )}
           >
             <item.icon className="h-5 w-5" />
-            {item.label}
+            {t(item.label)}
           </button>
         ))}
         {/* Remove the Admin link */}
       </nav>
       <div className="mt-auto pt-6">
-        <Button onClick={signOut}>Sign Out</Button>
+        <Button onClick={signOut}>{t('menuSheet.signOut')}</Button>
       </div>
     </div>
   )
@@ -65,18 +65,19 @@ function MenuContent({ onItemClick }: { onItemClick?: () => void }) {
 // Update MenuSheetComponent to handle sheet open state
 export function MenuSheetComponent() {
   const [open, setOpen] = useState(false)
+  const { t } = useAuth()
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button size="icon" variant="outline" className="sm:hidden">
           <PanelLeft className="h-5 w-5" />
-          <span className="sr-only">Toggle Menu</span>
+          <span className="sr-only">{t('menuSheet.toggleMenu')}</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="sm:max-w-xs flex flex-col">
         <SheetTitle className="hidden">
-          Menu
+          {t('menuSheet.menu')}
         </SheetTitle>
         <MenuContent onItemClick={() => setOpen(false)} />
       </SheetContent>

@@ -16,6 +16,7 @@ import { NumberInput } from "@/components/FormInputs/NumberInput"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { useRouter } from 'next/navigation';
+import { useAuth } from "@/contexts/AuthProvider"
 
 interface AddItemFormProps {
   onClose: () => void;
@@ -24,6 +25,7 @@ interface AddItemFormProps {
 
 export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
   const router = useRouter();
+  const { t } = useAuth();
 
   const {
     editingReservation,
@@ -196,48 +198,48 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
 
   const pages = [
     {
-      title: "Basic Info",
+      title: t('reservation.basicInfo'),
       icon: <FileText className="h-4 w-4" />,
       fields: ["name", "comment"],
       content: (
         <div className="space-y-4">
           <div>
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('reservation.name')}</Label>
             <Input
               id="name"
               value={editingReservation?.name || ""}
               onChange={(e) => updateField("name", e.target.value)}
-              placeholder="Enter reservation name"
-              className="text-base" // Add this class to increase font size
+              placeholder={t('reservation.enterReservationName')}
+              className="text-base"
             />
           </div>
           <div>
-            <Label htmlFor="comment">Comment (Optional)</Label>
+            <Label htmlFor="comment">{t('reservation.comment')}</Label>
             <Textarea
               id="comment"
               value={editingReservation?.comment || ""}
               onChange={(e) => updateField("comment", e.target.value)}
-              placeholder="Enter reservation details"
-              className="text-base" // Add this class to increase font size
+              placeholder={t('reservation.enterReservationDetails')}
+              className="text-base"
             />
           </div>
         </div>
       ),
     },
     {
-      title: "Date and Time",
+      title: t('reservation.dateAndTime'),
       icon: <Calendar className="h-4 w-4" />,
       fields: ["dateStart", "dateEnd"],
       content: (
         <div className="space-y-4">
           <div>
-            <Label>Time Range</Label>
+            <Label>{t('reservation.timeRange')}</Label>
             <HourRangePickerComponent
               onHourRangeChange={handleHourRangeChange}
             />
           </div>
           <div>
-            <Label>Date Range</Label>
+            <Label>{t('reservation.dateRange')}</Label>
             <DayRangePicker
               currentDateRange={editingReservation.dateStart && editingReservation.dateEnd ? [editingReservation.dateStart, editingReservation.dateEnd] : [new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]}
               onClose={handleClose}
@@ -247,27 +249,27 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
       ),
     },
     {
-      title: "Additional Info",
+      title: t('reservation.additionalInfo'),
       icon: <User className="h-4 w-4" />,
       fields: ["numberOfPeople", "contact"],
       content: (
         <div className="space-y-4">
           <div>
-            <Label htmlFor="numberOfPeople">Number of People</Label>
+            <Label htmlFor="numberOfPeople">{t('reservation.numberOfPeople')}</Label>
             <NumberInput
               currentNumber={editingReservation?.numberOfPeople || 1}
               onNumberChange={(value) => updateField("numberOfPeople", value)}
-              className="text-base" // Add this class to increase font size
+              className="text-base"
             />
           </div>
           <div>
-            <Label htmlFor="contact">Contact (Optional)</Label>
+            <Label htmlFor="contact">{t('reservation.contact')}</Label>
             <Input
               id="contact"
               value={editingReservation?.contact?.join(', ') || ''}
               onChange={(e) => updateField("contact", e.target.value.split(',').map(s => s.trim()))}
-              placeholder="Enter contact information (comma-separated)"
-              className="text-base" // Add this class to increase font size
+              placeholder={t('reservation.enterContactInfo')}
+              className="text-base"
             />
           </div>
         </div>
@@ -302,27 +304,27 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
   return (
     <DrawerContent>
       <DrawerHeader>
-        <DrawerTitle>{isEditing ? "Edit Reservation" : "Add New Reservation"}</DrawerTitle>
+        <DrawerTitle>{isEditing ? t('reservation.editReservation') : t('reservation.addNewReservation')}</DrawerTitle>
         <DrawerDescription className="flex justify-between items-center">
           <span>{pages[page].title}</span>
           {isEditing && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Delete Reservation">
+                <Button variant="ghost" size="icon" aria-label={t('reservation.deleteReservation')}>
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('reservation.deleteConfirmTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the reservation.
+                    {t('reservation.deleteConfirmDescription')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t('reservation.cancel')}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDeleteReservation}>
-                    Delete
+                    {t('reservation.delete')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -358,7 +360,7 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
           </Button>
           {page === pages.length - 1 ? (
             <Button onClick={handleSubmit} disabled={isEditing && changedFields.size === 0}>
-              Submit
+              {t('reservation.submit')}
             </Button>
           ) : (
             <Button

@@ -6,15 +6,18 @@ import { auth } from '@/lib/firebase/config';
 import { getUser } from '@/lib/firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { UserRole, AppUser } from '@/lib/projectTypes';
-
+import { userSetting } from '@/lib/settings';
+import { getTranslation } from '@/lib/utils/languageUtils';
 
 // Create a context for authentication state
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-
 export interface AuthContextType {
     user: AppUser | null;
     loading: boolean;
+    language: string;
+    setLanguage: (lang: string) => void;
+    t: (key: string) => string;
 }
 
 /**
@@ -38,7 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<AppUser | null>(null)
 
     const [loading, setLoading] = useState(true);
-    const router = useRouter();
+    const [language, setLanguage] = useState(userSetting.defaultLanguage);
+
+    const t = (key: string) => getTranslation(key, language);
 
     useEffect(() => {
         // Subscribe to Firebase auth state changes
@@ -76,7 +81,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Prepare context value
     const value = {
         user,
-        loading
+        loading,
+        language,
+        setLanguage,
+        t,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

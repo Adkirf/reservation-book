@@ -1,0 +1,129 @@
+{
+  "admin": {
+    "userManagement": "User Management",
+    "addNewUser": "Add New User",
+    "email": "Email",
+    "employee": "Employee",
+    "admin": "Admin",
+    "addUser": "Add User",
+    "userAddedSuccess": "User added successfully",
+    "userAddedError": "Error adding user"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "weekdays": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
+    "swipeInstructions": "Swipe to change month"
+  },
+  "login": {
+    "title": "Login",
+    "error": "Authentication failed. Please try again."
+  },
+  "offline": {
+    "title": "You are offline",
+    "message": "Please check your internet connection and try again."
+  },
+  "reservations": {
+    "title": "Reservations",
+    "searchPlaceholder": "Search...",
+    "toggleColumns": "Toggle columns",
+    "noReservations": "No Reservations found"
+  },
+  "support": {
+    "title": "Support"
+  },
+  "layout": {
+    "appName": "My App",
+    "addToHomeScreen": "Add to Home Screen",
+    "shareButton": "In your browser, tap the share button.",
+    "addHomeScreenButton": "Add to your Home Screen.",
+    "offlineMessage": "You are offline",
+    "checkConnection": "Please check your internet connection and try again."
+  },
+  "home": {
+    "noReservations": "No Reservations found"
+  },
+  "confirmation": {
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "guests": "Guests",
+    "person": "person",
+    "people": "people",
+    "comment": "Comment",
+    "noComment": "No comment provided",
+    "contactInformation": "Contact Information:"
+  },
+  "formInputs": {
+    "pickDate": "Pick a date",
+    "pickDateRange": "Pick a date range",
+    "arrival": "Arrival",
+    "departure": "Departure",
+    "selectArrivalHour": "Select Arrival Hour",
+    "selectDepartureHour": "Select Departure Hour"
+  },
+  "reservation": {
+    "basicInfo": "Basic Info",
+    "dateAndTime": "Date and Time",
+    "additionalInfo": "Additional Info",
+    "name": "Name",
+    "enterReservationName": "Enter reservation name",
+    "comment": "Comment (Optional)",
+    "enterReservationDetails": "Enter reservation details",
+    "timeRange": "Time Range",
+    "dateRange": "Date Range",
+    "numberOfPeople": "Number of People",
+    "contact": "Contact (Optional)",
+    "enterContactInfo": "Enter contact information (comma-separated)",
+    "editReservation": "Edit Reservation",
+    "addNewReservation": "Add New Reservation",
+    "deleteReservation": "Delete Reservation",
+    "deleteConfirmTitle": "Are you absolutely sure?",
+    "deleteConfirmDescription": "This action cannot be undone. This will permanently delete the reservation.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "submit": "Submit"
+  },
+  "userManagement": {
+    "login": "Login",
+    "loginDescription": "You can only login if your employee has registered you.",
+    "signInWithGoogle": "Sign in with Google",
+    "or": "or",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "createAccount": "Create an account"
+  },
+  "menuSheet": {
+    "toggleMenu": "Toggle Menu",
+    "menu": "Menu",
+    "home": "Home",
+    "calendar": "Calendar",
+    "allReservations": "All Reservations",
+    "support": "Support",
+    "signOut": "Sign Out"
+  },
+  "protectedRoute": {
+    "unauthorized": "You are not authorized to view this page."
+  },
+  "columns": {
+    "name": "Name",
+    "dateStart": "Start Date",
+    "dateEnd": "End Date",
+    "numberOfPeople": "Number of People",
+    "comment": "Comment",
+    "contact": "Contact"
+  }
+}

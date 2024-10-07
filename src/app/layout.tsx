@@ -3,7 +3,7 @@
 import { useContext, useState, useEffect } from "react";
 import localFont from "next/font/local";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthProvider";
+import { AuthProvider, useAuth } from "@/contexts/AuthProvider";
 import { MenuSheetComponent } from "@/components/MenuSheet";
 import { MenuSidebar } from "@/components/MenuSheet";
 import { AddItemIcon } from "@/components/Reservation/AddItemIcon";
@@ -28,7 +28,8 @@ const geistMono = localFont({
 });
 
 // PWA Installation Instructions Component
-function PWAInstallInstructions({ onClose }: { onClose: () => void }) {
+function PWAInstallInstructions() {
+  const { t } = useAuth();
   return (
     <div className="w-full h-screen bg-gray-200 p-4">
       <div className="flex flex-col gap-4 w-full max-w-[500px] justify-center items-center mt-8">
@@ -36,16 +37,16 @@ function PWAInstallInstructions({ onClose }: { onClose: () => void }) {
           <img className="rounded-xl" src="/assets/addIcon2.png" />
         </div>
         <h3 className="text-xl font-bold text-gray-700">
-          Add to Home Screen
+          {t('layout.addToHomeScreen')}
         </h3>
-        <p>You need to add this website to your home screen.</p>
+        <p>{t('layout.addToHomeScreen')}</p>
 
         <div className="border border-gray-400 rounded-xl p-4 mt-8">
-          <p>1. In your browser, tap the share button.</p>
+          <p>{t('layout.shareButton')}</p>
           <img src="/assets/share.png" />
         </div>
         <div className="border border-gray-400 rounded-xl p-4">
-          <p>2. Add to your Home Screen.</p>
+          <p>{t('layout.addHomeScreenButton')}</p>
           <img src="/assets/addtohomescreen.png" />
         </div>
       </div>
@@ -74,12 +75,16 @@ export default function RootLayout({
       );
     }
 
-    // Check if the app is installed
+    // Check if the app is installed and if it's a touch screen device
     const checkInstallation = () => {
+      const isTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       if (window.matchMedia('(display-mode: standalone)').matches) {
         setIsAppInstalled(true);
-      } else {
+      } else if (isTouchScreen) {
         setShowInstallInstructions(true);
+      } else {
+        setShowInstallInstructions(false);
+        setIsAppInstalled(false);
       }
     };
 
@@ -93,6 +98,27 @@ export default function RootLayout({
   const isLoginPage = pathname === '/login';
   const isConfirmationPage = pathname.startsWith('/confirmation/');
 
+  const intialRedirect = (children: React.ReactNode) => {
+    if (isConfirmationPage) {
+      return children;
+    }
+    else {
+      return <AuthProvider>
+        {showInstallInstructions && !isAppInstalled ? (
+          <PWAInstallInstructions />
+        ) : isLoginPage ? (
+          children
+        ) : (
+          <ProtectedRoute allowedRoles={['employee', 'admin']}>
+            <ReservationProvider>
+              <LayoutContent>{children}</LayoutContent>
+            </ReservationProvider>
+          </ProtectedRoute>
+        )}
+      </AuthProvider>
+    }
+  }
+
   return (
     <html lang="en">
       <head>
@@ -101,20 +127,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen`}
       >
-        {showInstallInstructions && !isAppInstalled && (
-          <PWAInstallInstructions onClose={() => setShowInstallInstructions(false)} />
-        )}
-        <AuthProvider>
-          {isLoginPage || isConfirmationPage ? (
-            children
-          ) : (
-            <ProtectedRoute allowedRoles={['employee', 'admin']}>
-              <ReservationProvider>
-                <LayoutContent>{children}</LayoutContent>
-              </ReservationProvider>
-            </ProtectedRoute>
-          )}
-        </AuthProvider>
+        {intialRedirect(children)}
       </body>
     </html>
   );
@@ -122,6 +135,7 @@ export default function RootLayout({
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { t } = useAuth();
 
   return (
     <div className="flex flex-col flex-grow sm:flex-row bg-background text-foreground">
@@ -130,7 +144,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 bg-background border-b sm:hidden">
           <div className="container mx-auto px-4 h-16 flex items-center">
             <MenuSheetComponent />
-            <h1 className="text-lg font-semibold ml-4">My App</h1>
+            <h1 className="text-lg font-semibold ml-4">{t('layout.appName')}</h1>
           </div>
         </header>
 

@@ -7,6 +7,7 @@ import { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useAuth } from '@/contexts/AuthProvider'
 
 interface DayRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
     currentDateRange: [Date, Date]
@@ -17,9 +18,11 @@ export default function DayRangePicker({
     currentDateRange,
     onClose,
 }: DayRangePickerProps) {
+    const { t } = useAuth();
+
     const formatDate = (date: Date | undefined) => {
         if (!date || isNaN(date.getTime())) {
-            return "Pick a date"
+            return t('formInputs.pickDate')
         }
         return format(date, "LLL dd, y")
     }
@@ -44,7 +47,7 @@ export default function DayRangePicker({
                         {formatDate(currentDateRange[0])} - {formatDate(currentDateRange[1])}
                     </>
                 ) : (
-                    <span>Pick a date range</span>
+                    <span>{t('formInputs.pickDateRange')}</span>
                 )}
             </Button>
         </div>

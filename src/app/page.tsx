@@ -6,10 +6,12 @@ import ConfirmationCard from '@/components/Confirmation/ConfirmationCard'
 import DaySwiper from '@/components/Confirmation/DaySwiper'
 import LoadingCircle from '@/components/ui/LoadingCircle'
 import { useReservation } from '@/contexts/ReservationProvider'
+import { useAuth } from '@/contexts/AuthProvider'
 
 export default function Home() {
   const { reservations, isLoading, fetchAllReservations } = useReservation()
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
+  const { t } = useAuth()
 
   useEffect(() => {
     fetchAllReservations()
@@ -26,7 +28,7 @@ export default function Home() {
   }
   if (reservations.length === 0) {
     return <div className="flex flex-col h-full w-full p-4">
-      No Reservations found
+      {t('home.noReservations')}
     </div>
   }
 

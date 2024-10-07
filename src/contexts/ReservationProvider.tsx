@@ -90,10 +90,16 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
 
     const resetEditingReservation = useCallback(() => {
         console.log("resetting")
+        const today = new Date();
+        today.setHours(userSetting.checkInHour, 0, 0, 0);
+        const tomorrow = new Date()
+        tomorrow.setDate(today.getDate() + 1);
+        tomorrow.setHours(userSetting.checkOutHour, 0, 0, 0);
+        setIsEditing(false);
         setEditingReservation({
             name: "",
-            dateStart: new Date(),
-            dateEnd: new Date(),
+            dateStart: today,
+            dateEnd: tomorrow,
             comment: "",
             numberOfPeople: userSetting.numberOfPeople,
             contact: [],
@@ -163,6 +169,10 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         setIsDrawerOpen(true);
     }, []);
 
+    const handleCloseDrawer = useCallback(() => {
+        setIsDrawerOpen(false);
+    }, [editingReservation, resetEditingReservation]);
+
     const deleteReservation = useCallback(async (id: string) => {
         try {
             await deleteReservationInFirestore(id);
@@ -174,11 +184,6 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
             throw error;
         }
     }, []);
-
-    const handleCloseDrawer = useCallback(() => {
-
-        setIsDrawerOpen(false);
-    }, [editingReservation, resetEditingReservation]);
 
     const getReservationsByMonth = useCallback((month: Month, year: number) => {
         const monthIndex = Months.indexOf(month);

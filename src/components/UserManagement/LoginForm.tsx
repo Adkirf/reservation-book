@@ -10,21 +10,24 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { signInWithGoogle } from "@/lib/firebase/auth"
+import { useAuth } from "@/contexts/AuthProvider"
 
 export function LoginForm() {
+    const { t } = useAuth();
+
     return (
         <Card className="w-full max-w-sm">
             <CardHeader>
-                <CardTitle className="text-2xl">Login</CardTitle>
+                <CardTitle className="text-2xl">{t('userManagement.login')}</CardTitle>
                 <CardDescription>
-                    You can only login if your employee has registered you.
+                    {t('userManagement.loginDescription')}
                 </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
-
+                {/* Add any additional content here */}
             </CardContent>
             <CardFooter>
-                <Button onClick={signInWithGoogle} className="w-full">Sign in with google</Button>
+                <Button onClick={signInWithGoogle} className="w-full">{t('userManagement.signInWithGoogle')}</Button>
             </CardFooter>
         </Card>
     )
