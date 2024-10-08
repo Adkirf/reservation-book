@@ -43,7 +43,18 @@
     "noReservations": "No se encontraron reservas"
   },
   "support": {
-    "title": "Soporte"
+    "title": "Soporte",
+    "description": "Videos cortos que explican las funciones básicas.",
+    "makeResTitle": "Hacer tu Primera Reserva",
+    "makeResDescription": "Usa el botón + y el calendario para crear una nueva reserva.",
+    "editResTitle": "Editar una Reserva",
+    "editResDescription": "Cuando haces clic en una reserva, el botón + cambiará a un botón de edición. Al hacer clic en él, podrás modificar la reserva.",
+    "inBetweenResTitle": "Reservas con Intersecciones",
+    "inBetweenResDescription": "Cuando seleccionas una reserva que se cruza con otras reservas, el selector de tiempo reflejará las horas disponibles para el check-in y check-out.",
+    "shareResTitle": "Compartir una Reserva",
+    "shareResDescription": "Toca el botón de compartir en una reserva para compartirla con cualquier persona.",
+    "crossMonthResTitle": "Reservas entre dos Meses",
+    "crossMonthResDescription": "Selecciona el primer o el último día de un mes y desliza hacia el siguiente o anterior mez para crear reservas que extienden meses."
   },
   "layout": {
     "appName": "Mi Aplicación",

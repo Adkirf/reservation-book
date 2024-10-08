@@ -43,7 +43,18 @@
     "noReservations": "No Reservations found"
   },
   "support": {
-    "title": "Support"
+    "title": "Support",
+    "description": "Short videos that explain the basic features.",
+    "makeResTitle": "Make Your First Reservation",
+    "makeResDescription": "Use the + button and the calendar to create a new reservation.",
+    "editResTitle": "Edit a Reservation",
+    "editResDescription": "When you click on a reservation, the + button will change to an edit button. Clicking it will allow you to modify the reservation.",
+    "inBetweenResTitle": "Intersecting Reservations",
+    "inBetweenResDescription": "When you select a reservation that intersects other reservation, the time picker will reflect the avaiable check-in and check-out times.",
+    "shareResTitle": "Share a Reservation",
+    "shareResDescription": "Tap the share button in on a reservation to share it with anyone.",
+    "crossMonthResTitle": "Cross-Month Reservations",
+    "crossMonthResDescription": "Select the first or the last day of a month and swipe to the next or previos month to create reservations that extend months."
   },
   "layout": {
     "appName": "My App",
