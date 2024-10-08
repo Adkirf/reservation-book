@@ -66,7 +66,8 @@
     "people": "personas",
     "comment": "Comentario",
     "noComment": "Sin comentarios",
-    "contactInformation": "Información de contacto:"
+    "contactInformation": "Información de contacto:",
+    "goBack": "Volver"
   },
   "formInputs": {
     "pickDate": "Elige una fecha",
