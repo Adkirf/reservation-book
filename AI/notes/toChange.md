@@ -1,6 +1,8 @@
 
-now: 
-- test with fully booked year
+For prod: 
+- auth signInWithGoogle throw error
+- authprovider real userData
+
 
 
 Outlook:

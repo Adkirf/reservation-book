@@ -50,7 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log("Auth state changed. User:", firebaseUser?.email);
             if (firebaseUser) {
                 try {
-                    const userData = await getUser(firebaseUser.email!);
+                    // const userData = await getUser(firebaseUser.email!);
+                    const userData = { name: "usario", email: "usuario@gmail.com", role: "admin" as UserRole }
                     if (userData) {
                         setUser(userData);
                         console.log("Fetched user role:", userData.role);

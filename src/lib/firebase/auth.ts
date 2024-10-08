@@ -17,6 +17,7 @@ export const signInWithGoogle = async (): Promise<void> => {
 
         // Verify user's existence in the database
         const userDoc = await getDoc(doc(db, 'users', googleUser.email!));
+
         if (!userDoc.exists()) {
             // Prevent unauthorized access by signing out and throwing an error
             await auth.signOut();
@@ -26,7 +27,7 @@ export const signInWithGoogle = async (): Promise<void> => {
         // User exists in the database, authentication can proceed
     } catch (error) {
         console.error('Error signing in with Google:', error);
-        throw error; // Re-throw for handling in the UI layer
+        //throw error; // Re-throw for handling in the UI layer
     }
 };
 
