@@ -35,6 +35,9 @@ export function NumberInput({ currentNumber, onNumberChange, className }: Number
     if (!isNaN(newValue)) {
       setValue(newValue)
       onNumberChange(newValue)
+    } else {
+      setValue(0)
+      onNumberChange(0)
     }
   }
 
@@ -53,7 +56,7 @@ export function NumberInput({ currentNumber, onNumberChange, className }: Number
         type="number"
         value={value}
         onChange={handleInputChange}
-        className="rounded-none text-center w-20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        className="text-base rounded-none text-center w-20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         aria-label="Number input"
       />
       <Button
