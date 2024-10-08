@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button"
 import { useReservation } from '@/contexts/ReservationProvider';
 import { Month, Months } from '@/lib/projectTypes';
 import { useSwipeable } from 'react-swipeable';
-import { userSetting } from '@/lib/settings';
-import { DayCell } from '@/components/Calendar/DayCell';
 import { useAuth } from '@/contexts/AuthProvider';
+import { DayCell } from '@/components/Calendar/DayCell';
 
 export function MonthlyView() {
+  const { settings } = useAuth();
   const { currentDate, isEditing, editingReservation, setCurrentDate, setIsEditing, updateEditingReservation, handleOpenDrawer, resetEditingReservation, setIntersectingArrivalHour, setIntersectingDepartureHour, getReservationsByMonth } = useReservation();
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [isSelecting, setIsSelecting] = useState(false)
@@ -219,10 +219,10 @@ export function MonthlyView() {
       setAdjustingEnd('end');
 
       const startDate = new Date(selectedDate);
-      startDate.setHours(userSetting.checkInHour, 0, 0, 0);
+      startDate.setHours(settings.checkInHour, 0, 0, 0);
       const endDate = new Date(selectedDate);
       endDate.setDate(endDate.getDate() + 1);
-      endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
+      endDate.setHours(settings.checkOutHour, 0, 0, 0);
       console.log(startDate, endDate)
       updateEditingReservation({
         dateStart: startDate,
@@ -303,9 +303,9 @@ export function MonthlyView() {
     setAdjustingEnd('end');
     if (selectedDays.length > 0) {
       let startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0]);
-      startDate.setHours(userSetting.checkInHour, 0, 0, 0);
+      startDate.setHours(settings.checkInHour, 0, 0, 0);
       let endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[selectedDays.length - 1]);
-      endDate.setHours(userSetting.checkOutHour, 0, 0, 0);
+      endDate.setHours(settings.checkOutHour, 0, 0, 0);
 
       if (isEndingMonthOfReservation) {
         startDate = new Date(editingReservation.dateStart)
@@ -399,12 +399,12 @@ export function MonthlyView() {
       else {
         if (isEndingMonthOfReservation) {
           updateEditingReservation({
-            dateEnd: new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0], userSetting.checkOutHour, 0, 0, 0),
+            dateEnd: new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0], settings.checkOutHour, 0, 0, 0),
           });
         }
         if (isStartingMonthOfReservation) {
           updateEditingReservation({
-            dateStart: new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0], userSetting.checkInHour, 0, 0, 0),
+            dateStart: new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDays[0], settings.checkInHour, 0, 0, 0),
           });
         }
         setSelectedDays([])
@@ -425,7 +425,7 @@ export function MonthlyView() {
   const weekdays = t('calendar.weekdays').split(',') as string[];
 
   return (
-    <div className="h-full w-full md:max-w-[400px] p-4 flex flex-col">
+    <div className="h-full w-full md:max-w-[400px] flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Previous month">
           <ChevronLeft className="h-4 w-4" />

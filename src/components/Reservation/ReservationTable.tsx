@@ -1,7 +1,6 @@
+import { useRef, useEffect, useState } from 'react';
 import {
     Card,
-    CardHeader,
-    CardTitle,
     CardContent,
     CardFooter,
 } from "@/components/ui/card"
@@ -14,41 +13,80 @@ import {
     TableCell,
 } from "@/components/ui/table"
 import { Reservation } from '@/lib/projectTypes'
-import { format } from 'date-fns';
-import { ChevronUp, ChevronDown, Filter } from 'lucide-react';
-import { useReservationFilters } from '@/hooks/useReservationFilter';
 import { useReservation } from '@/contexts/ReservationProvider';
-import { Input } from "../ui/input";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
+import { format } from 'date-fns';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
 
-// Update the props interface for the ReservationTable component
 interface ReservationTableProps {
     reservations: Reservation[]
     visibleColumns: string[]
     searchQuery: string
     setSearchQuery: (query: string) => void
     toggleColumn: (column: string) => void
+    translateColumn: (column: string) => string;
+    currentPage: number;
+    setCurrentPage: (page: number) => void;
+    totalPages: number;
+    totalReservations: number;
+    setItemsPerPage: (count: number) => void;
 }
 
-// Update the formatDateRange function to handle the new column name
-function formatDateRange(reservation: Reservation): string {
-    if (!reservation.dateStart || !reservation.dateEnd) return '';
-    return `${format(reservation.dateStart, 'dd')} - ${format(reservation.dateEnd, 'dd.MM')}`;
+function useOptimalRowCount(containerRef: React.RefObject<HTMLElement>, rowRef: React.RefObject<HTMLElement>) {
+    const [optimalRowCount, setOptimalRowCount] = useState(10);
+
+    useEffect(() => {
+        function calculateOptimalRowCount() {
+            if (containerRef.current && rowRef.current) {
+                const containerHeight = containerRef.current.clientHeight;
+                const rowHeight = rowRef.current.clientHeight;
+                const headerHeight = 40; // Approximate height of the table header
+                const footerHeight = 56; // Approximate height of the pagination footer
+                const availableHeight = containerHeight - headerHeight - footerHeight;
+                const calculatedRowCount = Math.floor(availableHeight / rowHeight);
+                setOptimalRowCount(Math.max(10, calculatedRowCount)); // Ensure at least 10 rows
+            }
+        }
+
+        const resizeObserver = new ResizeObserver(calculateOptimalRowCount);
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
+        }
+
+        return () => resizeObserver.disconnect();
+    }, [containerRef, rowRef]);
+
+    return optimalRowCount;
 }
 
-// Function to capitalize the first letter of a string
-function capitalizeFirstLetter(string: string): string {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-/**
- * ReservationTable: A component that displays a table of Reservations with dynamic column visibility.
- * It allows for responsive design for different screen sizes.
- */
-export default function ReservationTable({ reservations, visibleColumns, searchQuery, setSearchQuery, toggleColumn }: ReservationTableProps) {
-    const { formatDateRange } = useReservationFilters(reservations);
+export default function ReservationTable({
+    reservations,
+    visibleColumns,
+    searchQuery,
+    setSearchQuery,
+    toggleColumn,
+    translateColumn,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalReservations,
+    setItemsPerPage
+}: ReservationTableProps) {
     const { updateEditingReservation, handleOpenDrawer } = useReservation();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const rowRef = useRef<HTMLTableRowElement>(null);
+    const optimalRowCount = useOptimalRowCount(containerRef, rowRef);
+
+    useEffect(() => {
+        setItemsPerPage(optimalRowCount);
+    }, [optimalRowCount, setItemsPerPage]);
 
     const formatCellValue = (value: any, column: string): string => {
         if (value === null || value === undefined) return '';
@@ -69,8 +107,76 @@ export default function ReservationTable({ reservations, visibleColumns, searchQ
         handleOpenDrawer();
     };
 
+    const renderPaginationItems = () => {
+        const items = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                items.push(
+                    <PaginationItem key={i}>
+                        <PaginationLink
+                            onClick={() => setCurrentPage(i)}
+                            isActive={currentPage === i}
+                        >
+                            {i}
+                        </PaginationLink>
+                    </PaginationItem>
+                );
+            }
+        } else {
+            items.push(
+                <PaginationItem key={1}>
+                    <PaginationLink
+                        onClick={() => setCurrentPage(1)}
+                        isActive={currentPage === 1}
+                    >
+                        1
+                    </PaginationLink>
+                </PaginationItem>
+            );
+
+            if (currentPage > 3) {
+                items.push(<PaginationEllipsis key="ellipsis-start" />);
+            }
+
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(totalPages - 1, currentPage + 1);
+
+            for (let i = start; i <= end; i++) {
+                items.push(
+                    <PaginationItem key={i}>
+                        <PaginationLink
+                            onClick={() => setCurrentPage(i)}
+                            isActive={currentPage === i}
+                        >
+                            {i}
+                        </PaginationLink>
+                    </PaginationItem>
+                );
+            }
+
+            if (currentPage < totalPages - 2) {
+                items.push(<PaginationEllipsis key="ellipsis-end" />);
+            }
+
+            items.push(
+                <PaginationItem key={totalPages}>
+                    <PaginationLink
+                        onClick={() => setCurrentPage(totalPages)}
+                        isActive={currentPage === totalPages}
+                    >
+                        {totalPages}
+                    </PaginationLink>
+                </PaginationItem>
+            );
+        }
+
+        return items;
+    };
+
     return (
-        <Card className="h-full flex flex-col">
+        <Card className="flex flex-col h-[calc(100vh-100px)]" ref={containerRef}>
             <CardContent className="flex-grow overflow-auto relative">
                 <Table>
                     <TableHeader className="sticky top-0 z-10">
@@ -78,42 +184,41 @@ export default function ReservationTable({ reservations, visibleColumns, searchQ
                             {visibleColumns.map((column) => (
                                 <TableHead
                                     key={column}
-                                    className="whitespace-nowrap bg-background"
+                                    className="whitespace-nowrap bg-background text-center"
                                 >
-                                    {column === 'numberOfPeople'
-                                        ? 'Guests'
-                                        : capitalizeFirstLetter(column)}
+                                    {translateColumn(column)}
                                 </TableHead>
                             ))}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {reservations.map((reservation) => (
+                        {reservations.map((reservation, index) => (
                             <TableRow
                                 key={reservation.id}
                                 onClick={() => handleRowClick(reservation)}
                                 className="cursor-pointer hover:bg-muted/50"
+                                ref={index === 0 ? rowRef : null}
                             >
                                 {visibleColumns.map((column) => (
                                     <TableCell
                                         key={column}
-                                        className="whitespace-nowrap"
+                                        className="whitespace-nowrap text-center"
                                     >
                                         {formatCellValue(reservation[column as keyof Reservation], column)}
                                     </TableCell>
                                 ))}
                             </TableRow>
                         ))}
-                        <TableRow>
-                            <TableCell colSpan={visibleColumns.length} className="h-4" />
-                        </TableRow>
                     </TableBody>
                 </Table>
             </CardContent>
-            <CardFooter>
-                <div className="text-xs text-muted-foreground">
-                    Showing <strong>{reservations.length}</strong> reservations
-                </div>
+            <CardFooter className="flex justify-between items-center">
+
+                <Pagination>
+                    <PaginationContent>
+                        {renderPaginationItems()}
+                    </PaginationContent>
+                </Pagination>
             </CardFooter>
         </Card>
     )

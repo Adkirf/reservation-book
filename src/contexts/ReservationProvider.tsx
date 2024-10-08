@@ -4,7 +4,8 @@ import { useAuth } from './AuthProvider';
 import { deleteReservation as deleteReservationInFirestore, getReservations, addReservation, updateReservation as updateReservationInFirestore } from '@/lib/firebase/firestore';
 import { Drawer } from "@/components/ui/drawer";
 import { AddItemForm } from "@/components/Reservation/AddItemForm";
-import { userSetting } from '@/lib/settings';
+
+
 
 // Define the shape of the reservation context
 export interface ReservationContextType {
@@ -57,6 +58,7 @@ interface ReservationProviderProps {
  * Wraps child components with ReservationContext.Provider
  */
 export const ReservationProvider: React.FC<ReservationProviderProps> = ({ children }) => {
+    const { user, settings } = useAuth();
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [intersectingArrivalHour, setIntersectingArrivalHour] = useState<number | null>(null);
     const [intersectingDepartureHour, setIntersectingDepartureHour] = useState<number | null>(null);
@@ -67,14 +69,14 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         dateStart: new Date(),
         dateEnd: new Date(),
         comment: "",
-        numberOfPeople: userSetting.numberOfPeople,
+        numberOfPeople: settings.numberOfPeople,
         contact: [],
     });
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
     const [initialDrawerPage, setInitialDrawerPage] = useState<number>(0);
 
-    const { user } = useAuth();
+
 
     const updateEditingReservation = useCallback((updateFields: Partial<Reservation>) => {
         const { id, ...fieldsWithoutId } = updateFields;
@@ -91,17 +93,17 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
     const resetEditingReservation = useCallback(() => {
         console.log("resetting")
         const today = new Date();
-        today.setHours(userSetting.checkInHour, 0, 0, 0);
+        today.setHours(settings.checkInHour, 0, 0, 0);
         const tomorrow = new Date()
         tomorrow.setDate(today.getDate() + 1);
-        tomorrow.setHours(userSetting.checkOutHour, 0, 0, 0);
+        tomorrow.setHours(settings.checkOutHour, 0, 0, 0);
         setIsEditing(false);
         setEditingReservation({
             name: "",
             dateStart: today,
             dateEnd: tomorrow,
             comment: "",
-            numberOfPeople: userSetting.numberOfPeople,
+            numberOfPeople: settings.numberOfPeople,
             contact: [],
         });
     }, []);
@@ -124,7 +126,10 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
         setIsLoading(true);
         try {
             const fetchedReservations = await getReservations();
-            setReservations(fetchedReservations);
+            const sortedReservations = fetchedReservations.sort((a, b) =>
+                new Date(a.dateStart).getTime() - new Date(b.dateStart).getTime()
+            );
+            setReservations(sortedReservations);
         } catch (error) {
             console.error('Error fetching reservations:', error);
         } finally {
@@ -143,7 +148,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
             const id = await addReservation(newReservation);
             const reservationWithId = { ...newReservation, id };
             setReservations(prevReservations => [...prevReservations, reservationWithId]);
-
+            resetEditingReservation();
         } catch (error) {
             console.error('Error adding new reservation:', error);
         }

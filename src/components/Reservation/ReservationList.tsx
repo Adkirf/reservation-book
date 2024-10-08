@@ -14,14 +14,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { allColumns, Reservation } from '@/lib/projectTypes'
 import ReservationTable from './ReservationTable'
+import { useAuth } from '@/contexts/AuthProvider';
 
 interface ReservationListProps {
     reservations: Reservation[];
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     visibleColumns: string[];
-
     toggleColumn: (column: string) => void;
+    currentPage: number;
+    setCurrentPage: (page: number) => void;
+    totalPages: number;
+    setItemsPerPage: (count: number) => void;
 }
 
 export default function ReservationList({
@@ -29,9 +33,14 @@ export default function ReservationList({
     searchQuery,
     setSearchQuery,
     visibleColumns,
-    toggleColumn
+    toggleColumn,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    setItemsPerPage
 }: ReservationListProps) {
     const [filteredReservations, setFilteredReservations] = useState<Reservation[]>(reservations);
+    const { t } = useAuth();
 
     useEffect(() => {
         console.log('Reservations in ReservationList:', reservations);
@@ -42,16 +51,17 @@ export default function ReservationList({
         setSearchQuery(event.target.value);
     };
 
-    function capitalizeFirstLetter(string: string): string {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
+    const translateColumn = (column: string): string => {
+        const translationKey = `columns.${column}`;
+        return t(translationKey);
+    };
 
     return (
         <div className="flex flex-col h-full">
             <div className='flex flex-row gap-2 mb-4'>
                 <Input
                     type="text"
-                    placeholder="Search..."
+                    placeholder={t('reservations.searchPlaceholder')}
                     value={searchQuery}
                     onChange={handleSearchChange}
                     className="max-w-sm"
@@ -61,7 +71,7 @@ export default function ReservationList({
                         <Button variant="outline"><Filter className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t('reservations.toggleColumns')}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {allColumns.map((column) => (
                             <DropdownMenuCheckboxItem
@@ -73,7 +83,7 @@ export default function ReservationList({
                                     event.preventDefault();
                                 }}
                             >
-                                {column === 'numberOfPeople' ? 'Guests' : capitalizeFirstLetter(column)}
+                                {translateColumn(column)}
                             </DropdownMenuCheckboxItem>
                         ))}
                     </DropdownMenuContent>
@@ -87,6 +97,12 @@ export default function ReservationList({
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                     toggleColumn={toggleColumn}
+                    translateColumn={translateColumn}
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                    totalPages={totalPages}
+                    totalReservations={reservations.length}
+                    setItemsPerPage={setItemsPerPage}
                 />
             </div>
         </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { format } from 'date-fns'
-import { PlaneLanding, PlaneTakeoff, Users, MessageSquare, Phone, Mail, Upload } from 'lucide-react'
+import { PlaneLanding, PlaneTakeoff, Users, MessageSquare, Phone, Mail, Upload, Clock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Reservation } from '@/lib/projectTypes'
@@ -32,19 +32,30 @@ export default function ConfirmationCard({
         </CardHeader>
         <CardContent className="space-y-6 overflow-x-auto flex-grow">
 
-          <div className="flex items-center space-x-3">
-            <PlaneLanding className="text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">{t('confirmation.checkIn')}</p>
-              <p className="font-medium">{format(reservation.dateStart, 'MMM dd, yyyy')}</p>
+          <div className="flex items-center gap-8">
+            <div className="flex items-center space-x-3">
+              <PlaneLanding className="text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('confirmation.checkIn')}</p>
+                <p className="font-medium">{format(reservation.dateStart, 'MMM dd, yyyy')}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Clock className="text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('confirmation.time')}</p>
+                <p className="font-medium">{format(reservation.dateStart, 'HH:mm')} - {format(reservation.dateEnd, 'HH:mm')}</p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <PlaneTakeoff className="text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">{t('confirmation.checkOut')}</p>
-              <p className="font-medium">{format(reservation.dateEnd, 'MMM dd, yyyy')}</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <PlaneTakeoff className="text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">{t('confirmation.checkOut')}</p>
+                <p className="font-medium">{format(reservation.dateEnd, 'MMM dd, yyyy')}</p>
+              </div>
             </div>
           </div>
 

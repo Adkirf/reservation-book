@@ -137,6 +137,22 @@ export default function RootLayout({
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { t } = useAuth();
+  const pathname = usePathname();
+
+  const menuItems = [
+    { href: "/", label: "menuSheet.home" },
+    { href: "/calendar", label: "menuSheet.calendar" },
+    { href: "/reservations", label: "menuSheet.allReservations" },
+    { href: "/support", label: "menuSheet.support" },
+  ]
+
+  const getPageTitle = () => {
+    const currentItem = menuItems.find(item => item.href === pathname);
+    if (currentItem) {
+      return t(currentItem.label);
+    }
+    return t('layout.appName'); // Fallback to app name if no match found
+  }
 
   return (
     <div className="flex flex-col flex-grow sm:flex-row bg-background text-foreground">
@@ -145,11 +161,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 bg-background border-b sm:hidden">
           <div className="container mx-auto px-4 h-16 flex items-center">
             <MenuSheetComponent />
-            <h1 className="text-lg font-semibold ml-4">{t('layout.appName')}</h1>
+            <h1 className="text-lg font-semibold ml-4">{getPageTitle()}</h1>
           </div>
         </header>
 
-        <main className="flex flex-col flex-grow overflow-hidden">
+        <main className="flex flex-col flex-grow overflow-hidden p-4">
           {children}
         </main>
 

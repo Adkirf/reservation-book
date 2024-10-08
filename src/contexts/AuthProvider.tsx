@@ -5,9 +5,9 @@ import { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { getUser } from '@/lib/firebase/firestore';
 import { useRouter } from 'next/navigation';
-import { UserRole, AppUser } from '@/lib/projectTypes';
-import { userSetting } from '@/lib/settings';
-import { getTranslation } from '@/lib/utils/languageUtils';
+import { UserRole, AppUser, UserSettings } from '@/lib/projectTypes';
+import defaultSettings from '../../public/locales/defaultSettings.json';
+import { getTranslation } from '@/lib/utils';
 
 // Create a context for authentication state
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,8 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export interface AuthContextType {
     user: AppUser | null;
     loading: boolean;
-    language: string;
-    setLanguage: (lang: string) => void;
+    settings: UserSettings;
     t: (key: string) => string;
 }
 
@@ -41,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<AppUser | null>(null)
 
     const [loading, setLoading] = useState(true);
-    const [language, setLanguage] = useState(userSetting.defaultLanguage);
+    const [language, setLanguage] = useState(user?.settings?.defaultLanguages || defaultSettings.defaultLanguages);
 
     const t = (key: string) => getTranslation(key, language);
 
@@ -82,8 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const value = {
         user,
         loading,
-        language,
-        setLanguage,
+        settings: user?.settings || defaultSettings,
         t,
     };
 

@@ -4,44 +4,39 @@ import { sortAndFilterReservations } from "@/lib/utils";
 import { format } from 'date-fns';
 
 export const useReservationFilters = (initialReservations: Reservation[]) => {
-    const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [deselectedColumns, setDeselectedColumns] = useState<string[]>(() => {
         return allColumns.filter(column => !defaultColumns.includes(column));
     });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
     const visibleColumns = useMemo(() => {
         return allColumns.filter(column => !deselectedColumns.includes(column));
     }, [deselectedColumns]);
 
-    useEffect(() => {
-        updateFilters();
-    }, [searchQuery, visibleColumns]);
-
     const sortedReservations = useMemo(() => {
         return sortAndFilterReservations(initialReservations, {
             searchQuery,
             visibleColumns,
-        }).map(reservation => ({
-            ...reservation,
-            date: formatDateRange(reservation.dateStart, reservation.dateEnd)
-        }));
+        })
+            .sort((a, b) => a.dateStart.getTime() - b.dateStart.getTime())
+            .map(reservation => ({
+                ...reservation,
+                date: formatDateRange(reservation.dateStart, reservation.dateEnd)
+            }));
     }, [initialReservations, searchQuery, visibleColumns]);
 
-    const updateFilters = useCallback(() => {
-        const filteredReservations = sortAndFilterReservations(initialReservations, {
-            searchQuery,
-            visibleColumns,
-        });
-        setReservations(filteredReservations);
-    }, [initialReservations, searchQuery, visibleColumns]);
+    const paginatedReservations = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedReservations.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedReservations, currentPage, itemsPerPage]); // Add itemsPerPage to the dependency array
 
     const toggleColumn = (column: string) => {
         setDeselectedColumns(prev => {
             if (prev.includes(column)) {
                 return prev.filter(c => c !== column);
             } else {
-                // Prevent deselecting if it's the last visible column
                 if (visibleColumns.length > 1) {
                     return [...prev, column];
                 }
@@ -50,17 +45,22 @@ export const useReservationFilters = (initialReservations: Reservation[]) => {
         });
     };
 
+    const totalPages = Math.ceil(sortedReservations.length / itemsPerPage);
+
     return {
-        sortedReservations,
-        reservations: sortedReservations,
+        paginatedReservations,
         searchQuery,
         setSearchQuery,
         visibleColumns,
         allColumns,
         defaultColumns,
         toggleColumn,
-        updateFilters,
         formatDateRange,
+        currentPage,
+        setCurrentPage,
+        totalPages,
+        totalReservations: sortedReservations.length,
+        setItemsPerPage,
     };
 };
 

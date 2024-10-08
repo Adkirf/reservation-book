@@ -11,16 +11,23 @@ export type Month = typeof Months[number];
 export const allColumns = ['name', 'date', 'numberOfPeople', 'contact', 'comment'];
 export const defaultColumns = ['name', 'date', 'numberOfPeople'];
 
-export interface AppUser {
-    email: string,
-    name?: string,
-    role: UserRole;
+export type UserSettings = {
+    checkInHour: number;
+    checkOutHour: number;
+    numberOfPeople: number;
+    defaultLanguages: string;
 }
 
-export interface FilterOptions {
+export interface AppUser {
+    email: string,
+    role: UserRole;
+    name?: string,
+    settings?: UserSettings;
+}
+
+export interface ReservationFilterOptions {
     searchQuery: string;
     visibleColumns: string[];
-    sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
 }
 
 // Chat Message are between at least one user, and the admin. 

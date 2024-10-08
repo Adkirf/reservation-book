@@ -59,6 +59,7 @@
   "confirmation": {
     "checkIn": "Check-in",
     "checkOut": "Check-out",
+    "time": "Check-In/Out",
     "guests": "Guests",
     "person": "person",
     "people": "people",
@@ -122,8 +123,10 @@
     "name": "Name",
     "dateStart": "Start Date",
     "dateEnd": "End Date",
+    "date": "Date",
     "numberOfPeople": "Number of People",
-    "comment": "Comment",
-    "contact": "Contact"
-  }
+    "contact": "Contact",
+    "comment": "Comment"
+  },
+  "search_placeholder": "Search..."
 }
