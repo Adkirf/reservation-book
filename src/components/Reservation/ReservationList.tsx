@@ -64,7 +64,7 @@ export default function ReservationList({
                     placeholder={t('reservations.searchPlaceholder')}
                     value={searchQuery}
                     onChange={handleSearchChange}
-                    className="max-w-sm"
+                    className="max-w-sm text-base"
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
