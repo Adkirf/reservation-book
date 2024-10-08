@@ -31,7 +31,7 @@ const geistMono = localFont({
 function PWAInstallInstructions() {
   const { t } = useAuth();
   return (
-    <div className="w-full h-screen bg-gray-200 p-4 flex justify-center items-center">
+    <div className="w-full h-full bg-gray-200 p-4 flex flex-col overflow-auto justify-center items-center">
       <div className="flex flex-col gap-4 w-full max-w-[500px] justify-center items-center mt-8">
         <div className="w-[100px] h-[100px]">
           <img className="rounded-xl" src="/assets/icon-512x512.png" />
