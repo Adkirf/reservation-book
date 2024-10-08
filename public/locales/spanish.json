@@ -132,6 +132,7 @@
   },
   "search_placeholder": "Buscar...",
   "share": {
+    "title": "Compartir esta reserva",
     "linkCopiedTitle": "Enlace copiado",
     "linkCopiedDescription": "El enlace de la reserva ha sido copiado a tu portapapeles.",
     "copyFailedTitle": "Error al copiar",

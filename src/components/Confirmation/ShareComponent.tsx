@@ -71,7 +71,7 @@ export function ShareComponent({ children, reservationId }: ShareComponentProps)
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-center">
-          <DrawerTitle>Share this reservation</DrawerTitle>
+          <DrawerTitle>{t("share.copyFailedTitle")}</DrawerTitle>
         </DrawerHeader>
         <div className="flex flex-col items-center space-y-6 p-4">
           <div className="flex justify-center gap-4 w-full">

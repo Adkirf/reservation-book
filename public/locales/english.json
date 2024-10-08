@@ -132,6 +132,7 @@
   },
   "search_placeholder": "Search...",
   "share": {
+    "title": "Share this reservation",
     "linkCopiedTitle": "Link copied",
     "linkCopiedDescription": "The reservation link has been copied to your clipboard.",
     "copyFailedTitle": "Copy failed",
