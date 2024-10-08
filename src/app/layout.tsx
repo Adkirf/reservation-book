@@ -31,23 +31,25 @@ const geistMono = localFont({
 function PWAInstallInstructions() {
   const { t } = useAuth();
   return (
-    <div className="w-full h-full bg-gray-200 p-4 flex flex-col  overflow-auto  justify-center items-center">
-      <div className="flex flex-col gap-4 w-full max-w-[500px]  items-center">
-        <div className="w-[100px] h-[100px]">
-          <img className="rounded-xl" src="/assets/icon-512x512.png" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-700">
-          {t('layout.addToHomeScreenTitle')}
-        </h3>
-        <p>{t('layout.addToHomeScreenDescription')}</p>
+    <div className="w-full h-full bg-gray-200 fixed inset-0 overflow-y-auto">
+      <div className="min-h-full p-4 flex flex-col items-center justify-center">
+        <div className="flex flex-col gap-4 w-full max-w-[500px] items-center">
+          <div className="w-[100px] h-[100px]">
+            <img className="rounded-xl" src="/assets/icon-512x512.png" alt="App Icon" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-700">
+            {t('layout.addToHomeScreenTitle')}
+          </h3>
+          <p>{t('layout.addToHomeScreenDescription')}</p>
 
-        <div className="border border-gray-400 rounded-xl p-4 mt-8">
-          <p>{t('layout.shareButton')}</p>
-          <img src="/assets/share.png" />
-        </div>
-        <div className="border border-gray-400 rounded-xl p-4">
-          <p>{t('layout.addHomeScreenButton')}</p>
-          <img src="/assets/addtohomescreen.png" />
+          <div className="border border-gray-400 rounded-xl p-4 mt-8">
+            <p>{t('layout.shareButton')}</p>
+            <img src="/assets/share.png" alt="Share Button" />
+          </div>
+          <div className="border border-gray-400 rounded-xl p-4">
+            <p>{t('layout.addHomeScreenButton')}</p>
+            <img src="/assets/addtohomescreen.png" alt="Add to Home Screen Button" />
+          </div>
         </div>
       </div>
     </div>
