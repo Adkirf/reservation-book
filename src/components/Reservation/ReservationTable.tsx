@@ -48,7 +48,7 @@ function useOptimalRowCount(tableBodyRef: React.RefObject<HTMLTableSectionElemen
                 const tableBodyHeight = tableBodyRef.current.clientHeight;
                 const rowHeight = rowRef.current.clientHeight;
                 if (rowHeight === 0) return; // Prevent division by zero
-                const calculatedRowCount = Math.floor(tableBodyHeight / rowHeight) - 1;
+                const calculatedRowCount = Math.floor(tableBodyHeight / rowHeight) - 2;
                 console.log("Table body height:", tableBodyHeight, "Row height:", rowHeight, "Calculated row count:", calculatedRowCount);
                 setOptimalRowCount(Math.max(5, calculatedRowCount)); // Ensure at least 5 rows
             }
@@ -184,7 +184,7 @@ export default function ReservationTable({
 
     return (
         <Card className="flex flex-col h-full">
-            <CardContent ref={tableBodyRef} className="flex-grow overflow-auto relative">
+            <CardContent ref={tableBodyRef} className="flex-grow  relative">
                 <Table className="h-full">
                     <TableHeader className="sticky top-0 z-10">
                         <TableRow>

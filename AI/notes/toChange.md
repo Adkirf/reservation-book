@@ -1,7 +1,6 @@
 
 now: 
-- reservationlist pagination??? Scrollbar still shows
-- menu icon and header a bit larger?? check look
+- reservationlist pagination??? Scrollbar check all devices
 - Support, videos for each page/feature
 - test with fully booked year
 
@@ -16,6 +15,7 @@ Outlook:
 - Public calendar view, request reservation, implement in website.
 - Better reservation editing UX
 - Improved smartphone UI compatibility
+- Data Insights in home screen: total reservation, monthly increase, yearly, etc. 
 
 
 (Consider adding pagination or infinite scrolling to the UserList component if you expect a large number of users.

@@ -72,7 +72,7 @@ export function ShareComponent({ children, reservationId }: ShareComponentProps)
           <DrawerTitle>Share this reservation</DrawerTitle>
         </DrawerHeader>
         <div className="flex flex-col items-center space-y-6 p-4">
-          <div className="flex justify-center space-x-8 w-full">
+          <div className="flex justify-center gap-4 w-full">
             <div className="flex flex-col items-center space-y-2">
               <Button
                 onClick={() => handleShare('whatsapp')}
@@ -83,7 +83,7 @@ export function ShareComponent({ children, reservationId }: ShareComponentProps)
                 <MessageSquare className="h-4 w-4 text-gray-700" />
                 <span className="sr-only">Share on WhatsApp</span>
               </Button>
-              <span className="text-sm text-gray-700">WhatsApp</span>
+              <span className="text-sm text-gray-700">WhatsApp </span>
             </div>
             <div className="flex flex-col items-center space-y-2">
               <Button
@@ -95,7 +95,7 @@ export function ShareComponent({ children, reservationId }: ShareComponentProps)
                 <MessageCircle className="h-4 w-4 text-gray-700" />
                 <span className="sr-only">Share via SMS</span>
               </Button>
-              <span className="text-sm text-gray-700">SMS</span>
+              <span className="text-sm text-gray-700 whitespace-pre">   SMS   </span>
             </div>
             <div className="flex flex-col items-center space-y-2">
               <Button
@@ -107,7 +107,7 @@ export function ShareComponent({ children, reservationId }: ShareComponentProps)
                 <Mail className="h-4 w-4 text-gray-700" />
                 <span className="sr-only">Share via Email</span>
               </Button>
-              <span className="text-sm text-gray-700">Mail</span>
+              <span className="text-sm text-gray-700 whitespace-pre">  MAIL  </span>
             </div>
           </div>
           <div

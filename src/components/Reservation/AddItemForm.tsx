@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { X, ChevronLeft, ChevronRight, Calendar, Clock, User, FileText, MapPin, Trash2 } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Calendar, Clock, User, FileText, MapPin, Trash2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/AuthProvider"
+import { ShareComponent } from "../Confirmation/ShareComponent"
 
 interface AddItemFormProps {
   onClose: () => void;
@@ -308,27 +309,35 @@ export function AddItemForm({ onClose, initialPage = 0 }: AddItemFormProps) {
         <DrawerDescription className="flex justify-between items-center">
           <span>{pages[page].title}</span>
           {isEditing && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label={t('reservation.deleteReservation')}>
-                  <Trash2 className="h-4 w-4 text-red-500" />
+            <div className="flex flex-row items-center gap-2">
+              <ShareComponent reservationId={editingReservation.id || ""}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex justify-center items-center">
+                  <Upload className="h-5 w-5" />
+                  <span className="sr-only">Share</span>
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{t('reservation.deleteConfirmTitle')}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t('reservation.deleteConfirmDescription')}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t('reservation.cancel')}</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteReservation}>
-                    {t('reservation.delete')}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              </ShareComponent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label={t('reservation.deleteReservation')}>
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t('reservation.deleteConfirmTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('reservation.deleteConfirmDescription')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t('reservation.cancel')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteReservation}>
+                      {t('reservation.delete')}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           )}
         </DrawerDescription>
       </DrawerHeader>
