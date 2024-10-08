@@ -18,7 +18,7 @@ const LoadingCircle: React.FC = () => {
 
     if (showReload) {
         return (
-            <div className="flex items-center justify-center h-full w-full">
+            <div className="flex items-center flex-col justify-center h-full w-full">
                 <button
                     onClick={handleReload}
                     className="p-2 rounded-full hover:bg-gray-200 transition-colors"
@@ -26,6 +26,7 @@ const LoadingCircle: React.FC = () => {
                 >
                     <RefreshCw size={32} className="text-gray-900" />
                 </button>
+                <p>{"Try to open and close the app."}</p>
             </div>
         );
     }

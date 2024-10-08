@@ -82,18 +82,20 @@ export function VideoAccordionComponent({ videos }: VideoAccordionComponentProps
           <AccordionTrigger className="text-left">{item.title}</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
-              <video
-                autoPlay
-                muted
-                playsInline
-                loop
-                className="w-full rounded-md shadow-md"
-                poster={item.videoSrc.replace('.mp4', '-poster.jpg')}
-                key={openItem === `item-${index}` ? 'playing' : 'paused'}
-              >
-                <source src={item.videoSrc} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <div className="flex justify-center">
+                <video
+                  autoPlay
+                  muted
+                  playsInline
+                  loop
+                  className="w-full rounded-md shadow-md max-h-[50vh] max-w-[85vw] object-contain"
+                  poster={item.videoSrc.replace('.mp4', '-poster.jpg')}
+                  key={openItem === `item-${index}` ? 'playing' : 'paused'}
+                >
+                  <source src={item.videoSrc} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
               <p className="text-sm text-gray-600">{item.description}</p>
             </div>
           </AccordionContent>
