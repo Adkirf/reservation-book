@@ -45,6 +45,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const t = (key: string) => getTranslation(key, language);
 
     useEffect(() => {
+        const userData = { name: "usario", email: "usuario@gmail.com", role: "admin" as UserRole }
+        setUser(userData);
+        setLoading(false);
+    }, [])
+
+
+    /* useEffect(() => {
         // Subscribe to Firebase auth state changes
         const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
             console.log("Auth state changed. User:", firebaseUser?.email);
@@ -76,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Cleanup subscription on unmount
         return () => unsubscribe();
-    }, []);
+    }, []); */
 
     // Prepare context value
     const value = {
