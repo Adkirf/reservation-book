@@ -47,7 +47,8 @@
   },
   "layout": {
     "appName": "Mi Aplicación",
-    "addToHomeScreen": "Agregar a la pantalla de inicio",
+    "addToHomeScreenTitle": "Agregar a la pantalla de inicio",
+    "addToHomeScreenDescription": "Esta aplicación está optimizada para dispositivos móviles. Para agregarla a tu pantalla de inicio, sigue estos dos sencillos pasos:",
     "shareButton": "En tu navegador, toca el botón de compartir.",
     "addHomeScreenButton": "Agregar a tu pantalla de inicio.",
     "offlineMessage": "Estás desconectado",

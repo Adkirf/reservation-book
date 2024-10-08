@@ -31,15 +31,15 @@ const geistMono = localFont({
 function PWAInstallInstructions() {
   const { t } = useAuth();
   return (
-    <div className="w-full h-screen bg-gray-200 p-4">
+    <div className="w-full h-screen bg-gray-200 p-4 flex justify-center items-center">
       <div className="flex flex-col gap-4 w-full max-w-[500px] justify-center items-center mt-8">
         <div className="w-[100px] h-[100px]">
           <img className="rounded-xl" src="/assets/addIcon2.png" />
         </div>
         <h3 className="text-xl font-bold text-gray-700">
-          {t('layout.addToHomeScreen')}
+          {t('layout.addToHomeScreenTitle')}
         </h3>
-        <p>{t('layout.addToHomeScreen')}</p>
+        <p>{t('layout.addToHomeScreenDescription')}</p>
 
         <div className="border border-gray-400 rounded-xl p-4 mt-8">
           <p>{t('layout.shareButton')}</p>
@@ -80,11 +80,12 @@ export default function RootLayout({
       const isTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       if (window.matchMedia('(display-mode: standalone)').matches) {
         setIsAppInstalled(true);
-      } else if (isTouchScreen) {
+      } else if (!isTouchScreen) {
         setShowInstallInstructions(true);
+        setIsAppInstalled(false);
       } else {
         setShowInstallInstructions(false);
-        setIsAppInstalled(false);
+        setIsAppInstalled(true);
       }
     };
 
@@ -124,7 +125,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen fixed`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen fixed items-center`}
       >
         <AuthProvider>
           {intialRedirect(children)}

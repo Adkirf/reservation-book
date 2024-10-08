@@ -81,6 +81,7 @@ export const ReservationProvider: React.FC<ReservationProviderProps> = ({ childr
     const updateEditingReservation = useCallback((updateFields: Partial<Reservation>) => {
         const { id, ...fieldsWithoutId } = updateFields;
         setIsEditing(!!id);
+        console.log("updateEditingReservation", updateFields)
         setEditingReservation((prev) => {
             if (id !== undefined && id !== null) {
                 return { ...prev, ...updateFields };

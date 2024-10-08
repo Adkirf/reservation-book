@@ -47,7 +47,8 @@
   },
   "layout": {
     "appName": "My App",
-    "addToHomeScreen": "Add to Home Screen",
+    "addToHomeScreenTitle": "Add to Home Screen",
+    "addToHomeScreenDescription": "This application is optimized for mobile devices. To add it to your home screen, follow these two easy steps:",
     "shareButton": "In your browser, tap the share button.",
     "addHomeScreenButton": "Add to your Home Screen.",
     "offlineMessage": "You are offline",

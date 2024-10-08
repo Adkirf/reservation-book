@@ -19,7 +19,7 @@ export default function ReservationsPage() {
     } = useReservationFilters(reservations);
 
     return (
-        <div className="container mx-auto">
+        <div className="flex h-full mx-auto">
             <ReservationList
                 reservations={paginatedReservations}
                 searchQuery={searchQuery}

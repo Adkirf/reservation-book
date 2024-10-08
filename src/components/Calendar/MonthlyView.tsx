@@ -223,11 +223,16 @@ export function MonthlyView() {
       const endDate = new Date(selectedDate);
       endDate.setDate(endDate.getDate() + 1);
       endDate.setHours(settings.checkOutHour, 0, 0, 0);
-      console.log(startDate, endDate)
+      console.log("update reservation")
+      if (editingReservation.id) {
+        resetEditingReservation()
+      }
+
       updateEditingReservation({
         dateStart: startDate,
         dateEnd: endDate,
       });
+
       const newSelection = [startDate.getDate(), endDate.getDate()];
       isOverlap(newSelection)
     }
@@ -290,8 +295,6 @@ export function MonthlyView() {
           }
 
         }
-
-
         return newSelection;
       });
     }
@@ -315,7 +318,7 @@ export function MonthlyView() {
         endDate = new Date(editingReservation.dateEnd)
       }
       updateEditingReservation({
-        id: editingReservation.id,
+        id: isEditing ? editingReservation.id : undefined,
         dateStart: startDate,
         dateEnd: endDate,
       });

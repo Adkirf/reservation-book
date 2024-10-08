@@ -1,7 +1,7 @@
 
 now: 
-- ReservationForm, when inputing name right-left buttons cut off??? scroll-area
-- reservationlist pagination??? Only tested on large screen
+- reservationlist pagination??? Scrollbar still shows
+- menu icon and header a bit larger?? check look
 - Support, videos for each page/feature
 - test with fully booked year
 

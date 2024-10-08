@@ -18,6 +18,7 @@ export function AddItemIcon() {
                 handleOpenDrawer(1);
             }
         } else if (editingReservation?.id) {
+            console.log("editingReservation", editingReservation)
             resetEditingReservation();
             handleOpenDrawer();
         } else {

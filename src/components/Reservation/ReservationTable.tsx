@@ -39,29 +39,36 @@ interface ReservationTableProps {
     setItemsPerPage: (count: number) => void;
 }
 
-function useOptimalRowCount(containerRef: React.RefObject<HTMLElement>, rowRef: React.RefObject<HTMLElement>) {
+function useOptimalRowCount(tableBodyRef: React.RefObject<HTMLTableSectionElement>, rowRef: React.RefObject<HTMLTableRowElement>) {
     const [optimalRowCount, setOptimalRowCount] = useState(10);
 
     useEffect(() => {
         function calculateOptimalRowCount() {
-            if (containerRef.current && rowRef.current) {
-                const containerHeight = containerRef.current.clientHeight;
+            if (tableBodyRef.current && rowRef.current) {
+                const tableBodyHeight = tableBodyRef.current.clientHeight;
                 const rowHeight = rowRef.current.clientHeight;
-                const headerHeight = 40; // Approximate height of the table header
-                const footerHeight = 56; // Approximate height of the pagination footer
-                const availableHeight = containerHeight - headerHeight - footerHeight;
-                const calculatedRowCount = Math.floor(availableHeight / rowHeight);
-                setOptimalRowCount(Math.max(10, calculatedRowCount)); // Ensure at least 10 rows
+                if (rowHeight === 0) return; // Prevent division by zero
+                const calculatedRowCount = Math.floor(tableBodyHeight / rowHeight) - 1;
+                console.log("Table body height:", tableBodyHeight, "Row height:", rowHeight, "Calculated row count:", calculatedRowCount);
+                setOptimalRowCount(Math.max(5, calculatedRowCount)); // Ensure at least 5 rows
             }
         }
 
-        const resizeObserver = new ResizeObserver(calculateOptimalRowCount);
-        if (containerRef.current) {
-            resizeObserver.observe(containerRef.current);
+        // Initial calculation
+        calculateOptimalRowCount();
+
+        // Set up ResizeObserver
+        const resizeObserver = new ResizeObserver(() => {
+            // Add a small delay to ensure DOM has updated
+            setTimeout(calculateOptimalRowCount, 0);
+        });
+
+        if (tableBodyRef.current) {
+            resizeObserver.observe(tableBodyRef.current);
         }
 
         return () => resizeObserver.disconnect();
-    }, [containerRef, rowRef]);
+    }, [tableBodyRef, rowRef]);
 
     return optimalRowCount;
 }
@@ -80,9 +87,9 @@ export default function ReservationTable({
     setItemsPerPage
 }: ReservationTableProps) {
     const { updateEditingReservation, handleOpenDrawer } = useReservation();
-    const containerRef = useRef<HTMLDivElement>(null);
+    const tableBodyRef = useRef<HTMLTableSectionElement>(null);
     const rowRef = useRef<HTMLTableRowElement>(null);
-    const optimalRowCount = useOptimalRowCount(containerRef, rowRef);
+    const optimalRowCount = useOptimalRowCount(tableBodyRef, rowRef);
 
     useEffect(() => {
         setItemsPerPage(optimalRowCount);
@@ -176,9 +183,9 @@ export default function ReservationTable({
     };
 
     return (
-        <Card className="flex flex-col h-[calc(100vh-100px)]" ref={containerRef}>
-            <CardContent className="flex-grow overflow-auto relative">
-                <Table>
+        <Card className="flex flex-col h-full">
+            <CardContent ref={tableBodyRef} className="flex-grow overflow-auto relative">
+                <Table className="h-full">
                     <TableHeader className="sticky top-0 z-10">
                         <TableRow>
                             {visibleColumns.map((column) => (
@@ -191,7 +198,7 @@ export default function ReservationTable({
                             ))}
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="h-full">
                         {reservations.map((reservation, index) => (
                             <TableRow
                                 key={reservation.id}

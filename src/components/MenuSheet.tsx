@@ -70,8 +70,8 @@ export function MenuSheetComponent() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button size="icon" variant="outline" className="sm:hidden">
-          <PanelLeft className="h-5 w-5" />
+        <Button size="icon" variant="outline" className="sm:hidden h-12 w-12">
+          <PanelLeft className="h-8 w-8" />
           <span className="sr-only">{t('menuSheet.toggleMenu')}</span>
         </Button>
       </SheetTrigger>
