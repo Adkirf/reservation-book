@@ -73,10 +73,11 @@ export function MonthlyView() {
     }
 
     if (returnEarliest) {
-
+      console.log("is earliest")
       const earliestOverlap = overlappingReservations.reduce((earliest, reservation) => {
         const reservationStart = new Date(reservation.dateStart).getDate();
         if (newSelection[newSelection.length - 1] >= reservationStart &&
+          reservationStart >= newSelection[0] &&
           (!earliest || reservationStart < earliest.getDate())) {
           return new Date(reservation.dateStart);
         }
@@ -86,10 +87,13 @@ export function MonthlyView() {
       if (earliestOverlap) {
         setIntersectingDepartureHour(earliestOverlap.getHours());
         return { start: earliestOverlap.getDate() };
+      } else {
+        return null
       }
     }
 
     if (returnLatest) {
+      console.log("is latest")
       const latestOverlap = overlappingReservations.reduce((latest, reservation) => {
         const reservationEnd = new Date(reservation.dateEnd).getDate();
         if (newSelection[0] <= reservationEnd &&
@@ -99,7 +103,7 @@ export function MonthlyView() {
         }
         return latest;
       }, null as Date | null);
-      console.log("LATEST", latestOverlap)
+
       if (latestOverlap) {
 
         setIntersectingArrivalHour(latestOverlap.getHours());
