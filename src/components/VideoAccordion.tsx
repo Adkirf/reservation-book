@@ -68,18 +68,28 @@ interface VideoAccordionComponentProps {
 }
 
 export function VideoAccordionComponent({ videos }: VideoAccordionComponentProps) {
+  const [openItem, setOpenItem] = React.useState<string | null>(null);
+
   return (
-    <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
+    <Accordion
+      type="single"
+      collapsible
+      className="w-full max-w-3xl mx-auto"
+      onValueChange={(value) => setOpenItem(value)}
+    >
       {videos.map((item, index) => (
         <AccordionItem key={index} value={`item-${index}`}>
           <AccordionTrigger className="text-left">{item.title}</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
               <video
-                controls
-                preload="metadata"
+                autoPlay
+                muted
+                playsInline
+                loop
                 className="w-full rounded-md shadow-md"
                 poster={item.videoSrc.replace('.mp4', '-poster.jpg')}
+                key={openItem === `item-${index}` ? 'playing' : 'paused'}
               >
                 <source src={item.videoSrc} type="video/mp4" />
                 Your browser does not support the video tag.
