@@ -81,7 +81,7 @@ export default function RootLayout({
       if (window.matchMedia('(display-mode: standalone)').matches) {
         setIsAppInstalled(true);
       } else {
-        setShowInstallInstructions(false);
+        setShowInstallInstructions(false); //turn on and off
         setIsAppInstalled(false);
       }
     };

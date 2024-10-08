@@ -35,7 +35,7 @@ export default function SupportPage() {
     ];
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto h-full flex flex-col overflow-auto px-4 py-8">
             <p className="mb-6">{t('support.description')}</p>
             <VideoAccordionComponent videos={tutorialVideos} />
         </div>

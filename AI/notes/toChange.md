@@ -1,7 +1,5 @@
 
 now: 
-- reservationlist pagination??? Scrollbar check all devices
-- Support, videos for each page/feature
 - test with fully booked year
 
 
