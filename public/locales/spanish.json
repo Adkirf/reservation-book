@@ -129,5 +129,11 @@
     "contact": "Contacto",
     "comment": "Comentario"
   },
-  "search_placeholder": "Buscar..."
+  "search_placeholder": "Buscar...",
+  "share": {
+    "linkCopiedTitle": "Enlace copiado",
+    "linkCopiedDescription": "El enlace de la reserva ha sido copiado a tu portapapeles.",
+    "copyFailedTitle": "Error al copiar",
+    "copyFailedDescription": "No se pudo copiar el enlace. Por favor, inténtalo de nuevo."
+  }
 }

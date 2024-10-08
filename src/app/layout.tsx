@@ -126,6 +126,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           {intialRedirect(children)}
+          <Toaster />
         </AuthProvider>
       </body>
     </html>
@@ -168,7 +169,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </main>
 
         <AddItemIcon />
-        <Toaster />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 // or
 import { useToast } from "@/hooks/use-toast"
 import { Copy, Mail, MessageCircle, MessageSquare, Share2 } from "lucide-react"
+import { useAuth } from '@/contexts/AuthProvider';
 
 interface ShareComponentProps {
   children: ReactNode;
@@ -27,6 +28,9 @@ export function ShareComponent({ children, reservationId }: ShareComponentProps)
     setShortUrl(`${baseUrl}/...`)
   }, [reservationId])
 
+  const { toast } = useToast()
+  const { t } = useAuth();
+
   const handleShare = (method: string) => {
     switch (method) {
       case 'whatsapp':
@@ -41,20 +45,18 @@ export function ShareComponent({ children, reservationId }: ShareComponentProps)
     }
   }
 
-  const { toast } = useToast()
-
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(currentUrl)
       toast({
-        title: "Link copied",
-        description: "The reservation link has been copied to your clipboard.",
+        title: t("share.linkCopiedTitle"),
+        description: t("share.linkCopiedDescription"),
       })
     } catch (err) {
       console.error('Failed to copy: ', err)
       toast({
-        title: "Copy failed",
-        description: "Unable to copy the link. Please try again.",
+        title: t("share.copyFailedTitle"),
+        description: t("share.copyFailedDescription"),
         variant: "destructive",
       })
     }

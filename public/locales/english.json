@@ -129,5 +129,11 @@
     "contact": "Contact",
     "comment": "Comment"
   },
-  "search_placeholder": "Search..."
+  "search_placeholder": "Search...",
+  "share": {
+    "linkCopiedTitle": "Link copied",
+    "linkCopiedDescription": "The reservation link has been copied to your clipboard.",
+    "copyFailedTitle": "Copy failed",
+    "copyFailedDescription": "Unable to copy the link. Please try again."
+  }
 }
