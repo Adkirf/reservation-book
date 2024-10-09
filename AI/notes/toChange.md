@@ -2,6 +2,7 @@
 For prod: 
 - auth signInWithGoogle throw error
 - authprovider real userData
+- rules in firebase db
 
 
 
